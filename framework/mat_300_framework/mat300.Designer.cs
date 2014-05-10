@@ -147,7 +147,7 @@ namespace mat_300_framework
             // Menu_DeCast
             // 
             this.Menu_DeCast.Name = "Menu_DeCast";
-            this.Menu_DeCast.Size = new System.Drawing.Size(157, 24);
+            this.Menu_DeCast.Size = new System.Drawing.Size(175, 24);
             this.Menu_DeCast.Text = "&DeCastlejau";
             this.Menu_DeCast.Click += new System.EventHandler(this.Menu_DeCast_Click);
             // 

@@ -46,6 +46,11 @@ namespace mat_300_framework
                 return new Point2D(lhs.x + rhs.x, lhs.y + rhs.y);
             }
 
+            public static Point2D operator -(Point2D lhs, Point2D rhs)
+            {
+                return new Point2D(lhs.x - rhs.x, lhs.y - rhs.y);
+            }
+
             // gets a distance between two points. not actual distance; used for picking
             public static float operator %(Point2D lhs, Point2D rhs)
             {
@@ -246,37 +251,34 @@ namespace mat_300_framework
         private void Menu_DeCast_Click(object sender, EventArgs e)
         {
             Menu_DeCast.Checked = !Menu_DeCast.Checked;
-            Menu_Bern.Checked = false;
-            Menu_Midpoint.Checked = false;
+            Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
 
-            Menu_Inter_Poly.Checked = false;
-            Menu_Inter_Splines.Checked = false;
+            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
 
-            Menu_DeBoor.Checked = false;
-
-            Menu_Polyline.Enabled = true;
-            Menu_Points.Enabled = true;
-            Menu_Shell.Enabled = true;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
             ToggleDeBoorHUD(false);
+
+            if(Menu_DeCast.Checked)
+            {
+                label1.Visible = TValueUD.Visible = true;
+            }
+            else
+            {
+                label1.Visible = TValueUD.Visible = false;
+            }
 
             Refresh();
         }
 
         private void Menu_Bern_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = false;
             Menu_Bern.Checked = !Menu_Bern.Checked;
-            Menu_Midpoint.Checked = false;
+            Menu_DeCast.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
 
-            Menu_Inter_Poly.Checked = false;
-            Menu_Inter_Splines.Checked = false;
+            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
 
-            Menu_DeBoor.Checked = false;
-
-            Menu_Polyline.Enabled = true;
-            Menu_Points.Enabled = true;
-            Menu_Shell.Enabled = true;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
             ToggleDeBoorHUD(false);
 
@@ -285,18 +287,12 @@ namespace mat_300_framework
 
         private void Menu_Midpoint_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = false;
-            Menu_Bern.Checked = false;
             Menu_Midpoint.Checked = !Menu_Midpoint.Checked;
+            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_DeBoor.Checked = false;
 
-            Menu_Inter_Poly.Checked = false;
-            Menu_Inter_Splines.Checked = false;
+            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
 
-            Menu_DeBoor.Checked = false;
-
-            Menu_Polyline.Enabled = true;
-            Menu_Points.Enabled = true;
-            Menu_Shell.Enabled = true;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
             ToggleDeBoorHUD(false);
 
@@ -305,20 +301,14 @@ namespace mat_300_framework
 
         private void Menu_Inter_Poly_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = false;
-            Menu_Bern.Checked = false;
-            Menu_Midpoint.Checked = false;
+            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
 
             Menu_Inter_Poly.Checked = !Menu_Inter_Poly.Checked;
             Menu_Inter_Splines.Checked = false;
 
-            Menu_DeBoor.Checked = false;
 
-            Menu_Polyline.Enabled = false;
-            Menu_Polyline.Checked = false;
+            Menu_Polyline.Enabled = Menu_Polyline.Checked = Menu_Shell.Enabled = Menu_Shell.Checked = false;
             Menu_Points.Enabled = true;
-            Menu_Shell.Enabled = false;
-            Menu_Shell.Checked = false;
 
             ToggleDeBoorHUD(false);
 
@@ -327,20 +317,13 @@ namespace mat_300_framework
 
         private void Menu_Inter_Splines_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = false;
-            Menu_Bern.Checked = false;
-            Menu_Midpoint.Checked = false;
+            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
 
             Menu_Inter_Poly.Checked = false;
             Menu_Inter_Splines.Checked = !Menu_Inter_Splines.Checked;
 
-            Menu_DeBoor.Checked = false;
-
-            Menu_Polyline.Enabled = false;
-            Menu_Polyline.Checked = false;
+            Menu_Polyline.Enabled = Menu_Polyline.Checked = Menu_Shell.Enabled = Menu_Shell.Checked = false;
             Menu_Points.Enabled = true;
-            Menu_Shell.Enabled = false;
-            Menu_Shell.Checked = false;
 
             ToggleDeBoorHUD(false);
 
@@ -349,18 +332,13 @@ namespace mat_300_framework
 
         private void Menu_DeBoor_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = false;
-            Menu_Bern.Checked = false;
-            Menu_Midpoint.Checked = false;
+            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = false;
 
-            Menu_Inter_Poly.Checked = false;
-            Menu_Inter_Splines.Checked = false;
+            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
 
             Menu_DeBoor.Checked = !Menu_DeBoor.Checked;
 
-            Menu_Polyline.Enabled = true;
-            Menu_Points.Enabled = true;
-            Menu_Shell.Enabled = true;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
             ToggleDeBoorHUD(true);
 
@@ -644,7 +622,7 @@ namespace mat_300_framework
         {
             System.Diagnostics.Debug.Assert(!(d < 0) && !(i > d));
 
-            if (i == 0 || i == d)
+            if (i == 0 || i == d - 1)
             {
                 return 1;
             }
@@ -656,22 +634,72 @@ namespace mat_300_framework
 
         private Point2D Bernstein(float t)
         {
-            Point2D Result = new Point2D(0, 0);
-
             float tcomplement = 1.0f - t;
 
-            for(int i = 0; i < pts_.Count; ++i)
+            int binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, 0);
+            Point2D Result = (float)(binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - 1) * System.Math.Pow(t, 0)) * pts_[0];
+
+            for(int i = 1; i < pts_.Count; ++i)
             {
-                Result += (float)(GetPascalBinomialCoeff(pts_.Count, i) * System.Math.Pow(tcomplement, pts_.Count - i) * System.Math.Pow(t, i)) * pts_[i];
+                binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, i);
+                Result += (float)(binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - (1 + i)) * System.Math.Pow(t, i)) * pts_[i];
             }
             return Result;
         }
 
         private const float MAX_DIST = 6.0F;
 
+        private Point2D GetMidpoint(Point2D left, Point2D right)
+        {
+            return new Point2D(left + 0.5f * (right - left));
+        }
+
+        private List<Point2D> GetMidpoints(List<Point2D> cPs)
+        {
+            List<Point2D> cMidpoints = new List<Point2D>();
+
+            for (int i = 0; i + 1 < cPs.Count; ++i)
+            {
+                cMidpoints.Add( GetMidpoint(cPs[i], cPs[i+1]) );
+            }
+
+            return cMidpoints;
+        }
+
+        private List<Point2D> GetMidpointSubdivision(List<Point2D> cPs)
+        {
+            if(cPs.Count > 1)
+            {
+                List<Point2D> points = new List<Point2D>();
+                points.Add( cPs[0] );
+                points.AddRange( GetMidpointSubdivision(GetMidpoints(cPs)) );
+                points.Add( cPs[cPs.Count - 1] );
+                return points;
+            }
+            else
+            {
+                return cPs;
+            }
+        }
+
         private void DrawMidpoint(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> cPs)
         {
+            if (cPs.Count < 2)
+                return;
+           
+            List<Point2D> points = new List<Point2D>(cPs);
 
+            int iterations = 6;
+            while (iterations > 0)
+            {
+                points = GetMidpointSubdivision(points);
+                for(int i = 0; i + 1 < points.Count; ++i)
+                {
+                    gfx.DrawLine(pen, points[i].P(), points[i + 1].P());
+                }
+
+                iterations--;
+            }
         }
 
         private Point2D PolyInterpolate(float t)
