@@ -86,6 +86,8 @@ namespace mat_300_framework
         bool EdPtCont_; // end point continuity flag for std knot seq contruction
         Random rnd_; // random number generator
 
+        int iterations_;
+
         // pickpt returns an index of the closest point to the passed in point
         //  -- usually a mouse position
         private int PickPt(Point2D m)
@@ -183,6 +185,30 @@ namespace mat_300_framework
             }
         }
 
+        private void TValueUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (pts_.Count == 0)
+                return;
+
+            tVal_ = (float)TValueUD.Value;
+
+            TValueUD.Value = (decimal)tVal_;
+
+            Refresh();
+        }
+
+        private void IterationsUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (pts_.Count == 0)
+                return;
+
+            iterations_ = (int)IterationsUD.Value;
+
+            IterationsUD.Value = iterations_;
+
+            Refresh();
+        }
+
         private void NUD_degree_ValueChanged(object sender, EventArgs e)
         {
             if (pts_.Count == 0)
@@ -257,16 +283,9 @@ namespace mat_300_framework
 
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
+            ToggleTHUD(true);
+            ToggleIterationsHUD(false);
             ToggleDeBoorHUD(false);
-
-            if(Menu_DeCast.Checked)
-            {
-                label1.Visible = TValueUD.Visible = true;
-            }
-            else
-            {
-                label1.Visible = TValueUD.Visible = false;
-            }
 
             Refresh();
         }
@@ -280,6 +299,8 @@ namespace mat_300_framework
 
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
+            ToggleTHUD(true);
+            ToggleIterationsHUD(false);
             ToggleDeBoorHUD(false);
 
             Refresh();
@@ -294,6 +315,8 @@ namespace mat_300_framework
 
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
+            ToggleTHUD(false);
+            ToggleIterationsHUD(true);
             ToggleDeBoorHUD(false);
 
             Refresh();
@@ -380,6 +403,18 @@ namespace mat_300_framework
             {
                 Txt_knot.Text += knot.ToString() + " ";
             }
+        }
+
+        private void ToggleIterationsHUD( bool on )
+        {
+            label2.Visible = on;
+            IterationsUD.Visible = on;
+        }
+
+        private void ToggleTHUD( bool on)
+        {
+            label1.Visible = on;
+            TValueUD.Visible = on;
         }
 
         private void ToggleDeBoorHUD( bool on )
@@ -485,7 +520,7 @@ namespace mat_300_framework
             // Midpoint algorithm
             if (Menu_Midpoint.Checked)
             {
-                DrawMidpoint(gfx, splinePen, pts_);
+                DrawMidpoint(gfx, splinePen, pts_, (int)IterationsUD.Value);
             }
 
             // polygon interpolation
@@ -572,7 +607,26 @@ namespace mat_300_framework
 
         private void DrawShell(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> pts, float t)
         {
+            Point2D temppt;
+            List<Point2D> points = new List<Point2D>(pts);
+            List<Point2D> shellpts = new List<Point2D>();
 
+            while(points.Count > 1)
+            {
+                for (int i = 0; i + 1 < shellpts.Count; ++i)
+                {
+                    temppt = (1 - t) * points[i] + t * points[i + 1];
+                    gfx.DrawEllipse(pen, temppt.x - 2.0F, temppt.y - 2.0F, 4.0F, 4.0F);
+                    shellpts.Add(temppt);
+                }
+            
+                for (int i = 0; i + 1 < shellpts.Count; ++i)
+                {
+                    gfx.DrawLine(pen, shellpts[i].P(), shellpts[i + 1].P());
+                }
+
+                points = shellpts;
+            }
         }
 
         private Point2D Gamma(int start, int end, float t)
@@ -666,39 +720,50 @@ namespace mat_300_framework
             return cMidpoints;
         }
 
-        private List<Point2D> GetMidpointSubdivision(List<Point2D> cPs)
+        private List<Point2D> GetMidpointSubdivision(int iterations, List<Point2D> cPs)
         {
-            if(cPs.Count > 1)
-            {
-                List<Point2D> points = new List<Point2D>();
-                points.Add( cPs[0] );
-                points.AddRange( GetMidpointSubdivision(GetMidpoints(cPs)) );
-                points.Add( cPs[cPs.Count - 1] );
-                return points;
-            }
-            else
+            if (iterations == 0)
             {
                 return cPs;
             }
+            else
+            {
+                List<Point2D> left = new List<Point2D>();
+                List<Point2D> right = new List<Point2D>();
+                List<Point2D> points = new List<Point2D>();
+                List<Point2D> midpoints = new List<Point2D>(cPs);
+                while (midpoints.Count > 1)
+                {
+                    left.Add(midpoints[0]);
+                    right.Insert(0, midpoints[midpoints.Count - 1]);
+                    midpoints = GetMidpoints(midpoints);
+                }
+
+                left.Add(midpoints[0]);
+                right.Insert(0, midpoints[0]);
+
+                --iterations;
+                left = GetMidpointSubdivision(iterations, left);
+                right = GetMidpointSubdivision(iterations, right);
+                right.RemoveAt(0);  //Remove the common point
+
+                points.AddRange(left);
+                points.AddRange(right);
+
+                return points;
+            }
         }
 
-        private void DrawMidpoint(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> cPs)
+        private void DrawMidpoint(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> cPs, int iterations)
         {
             if (cPs.Count < 2)
                 return;
            
-            List<Point2D> points = new List<Point2D>(cPs);
+            List<Point2D> points = GetMidpointSubdivision(iterations, cPs);
 
-            int iterations = 6;
-            while (iterations > 0)
+            for(int i = 0; i + 1 < points.Count; ++i)
             {
-                points = GetMidpointSubdivision(points);
-                for(int i = 0; i + 1 < points.Count; ++i)
-                {
-                    gfx.DrawLine(pen, points[i].P(), points[i + 1].P());
-                }
-
-                iterations--;
+                gfx.DrawLine(pen, points[i].P(), points[i + 1].P());
             }
         }
 

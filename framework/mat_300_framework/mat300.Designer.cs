@@ -51,9 +51,12 @@ namespace mat_300_framework
             this.CB_cont = new System.Windows.Forms.CheckBox();
             this.TValueUD = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.IterationsUD = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_degree)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.TValueUD)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IterationsUD)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -147,7 +150,7 @@ namespace mat_300_framework
             // Menu_DeCast
             // 
             this.Menu_DeCast.Name = "Menu_DeCast";
-            this.Menu_DeCast.Size = new System.Drawing.Size(175, 24);
+            this.Menu_DeCast.Size = new System.Drawing.Size(157, 24);
             this.Menu_DeCast.Text = "&DeCastlejau";
             this.Menu_DeCast.Click += new System.EventHandler(this.Menu_DeCast_Click);
             // 
@@ -288,6 +291,7 @@ namespace mat_300_framework
             0,
             0,
             65536});
+            this.TValueUD.ValueChanged += new System.EventHandler(this.TValueUD_ValueChanged);
             // 
             // label1
             // 
@@ -298,12 +302,43 @@ namespace mat_300_framework
             this.label1.TabIndex = 9;
             this.label1.Text = "&T-Value";
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(302, 6);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(66, 17);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "&Iterations";
+            // 
+            // IterationsUD
+            // 
+            this.IterationsUD.AutoSize = true;
+            this.IterationsUD.Location = new System.Drawing.Point(374, 4);
+            this.IterationsUD.Maximum = new decimal(new int[] {
+            6,
+            0,
+            0,
+            0});
+            this.IterationsUD.Name = "IterationsUD";
+            this.IterationsUD.Size = new System.Drawing.Size(52, 22);
+            this.IterationsUD.TabIndex = 11;
+            this.IterationsUD.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.IterationsUD.Value = new decimal(new int[] {
+            4,
+            0,
+            0,
+            0});
+            this.IterationsUD.ValueChanged += new System.EventHandler(this.IterationsUD_ValueChanged);
+            // 
             // MAT300
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(1056, 705);
+            this.Controls.Add(this.IterationsUD);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.TValueUD);
             this.Controls.Add(this.CB_cont);
@@ -324,6 +359,7 @@ namespace mat_300_framework
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_degree)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.TValueUD)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IterationsUD)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -354,6 +390,8 @@ namespace mat_300_framework
         private System.Windows.Forms.CheckBox CB_cont;
         private System.Windows.Forms.NumericUpDown TValueUD;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.NumericUpDown IterationsUD;
     }
 }
 
