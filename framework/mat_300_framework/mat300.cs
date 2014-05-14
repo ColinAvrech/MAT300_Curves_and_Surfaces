@@ -40,6 +40,11 @@ namespace mat_300_framework
                 y = rhs.y;
             }
 
+            public override String ToString()
+            {
+                return "("  + x.ToString() + ", " + y.ToString() + ")";
+            }
+
             // adds two points together; used for barycentric combos
             public static Point2D operator +(Point2D lhs, Point2D rhs)
             {
@@ -79,6 +84,7 @@ namespace mat_300_framework
             }
         };
 
+        Size WindowSize;
         List<Point2D> pts_; // the list of points used in internal algthms
         float tVal_; // t-value used for shell drawing
         int degree_; // degree of deboor subsplines
@@ -117,6 +123,12 @@ namespace mat_300_framework
         private void Menu_Exit_Click(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private void MAT300_Resize(Object sender, EventHandler e)
+        {
+            // Set the size of button1 to the size of the client area of the form.
+            WindowSize = this.ClientSize;
         }
 
         private void MAT300_MouseMove(object sender, MouseEventArgs e)
@@ -185,41 +197,37 @@ namespace mat_300_framework
             }
         }
 
-        private void TValueUD_ValueChanged(object sender, EventArgs e)
+        private void NUD_ValueChanged(object sender, EventArgs e)
         {
             if (pts_.Count == 0)
                 return;
 
-            tVal_ = (float)TValueUD.Value;
+            if(Menu_Assign0.Checked)
+            {
+                degree_ = (int)NUD.Value;
 
-            TValueUD.Value = (decimal)tVal_;
+                NUD.Value = degree_;
+            }
+            else if( Menu_DeCast.Checked || Menu_Bern.Checked )
+            {
+                tVal_ = (float)NUD.Value;
+                NUD.Value = (decimal)tVal_;
+            }
+            else if(Menu_Midpoint.Checked)
+            {
+                iterations_ = (int)NUD.Value;
 
-            Refresh();
-        }
+                NUD.Value = iterations_;
+            }
+            else if (Menu_DeBoor.Checked)
+            {
+                degree_ = (int)NUD.Value;
 
-        private void IterationsUD_ValueChanged(object sender, EventArgs e)
-        {
-            if (pts_.Count == 0)
-                return;
+                ResetKnotSeq();
+                UpdateKnotSeq();
 
-            iterations_ = (int)IterationsUD.Value;
-
-            IterationsUD.Value = iterations_;
-
-            Refresh();
-        }
-
-        private void NUD_degree_ValueChanged(object sender, EventArgs e)
-        {
-            if (pts_.Count == 0)
-                return;
-
-            degree_ = (int)NUD_degree.Value;
-
-            ResetKnotSeq();
-            UpdateKnotSeq();
-
-            NUD_degree.Value = degree_;
+                NUD.Value = degree_;
+            }
 
             Refresh();
         }
@@ -274,6 +282,15 @@ namespace mat_300_framework
             Refresh();
         }
 
+        private void Menu_Assign0_Click(object sender, EventArgs e)
+        {
+            Menu_Assign0.Checked = !Menu_Assign0.Checked;
+
+            ToggleDeBoorHUD(false);
+
+            Refresh();
+        }
+
         private void Menu_DeCast_Click(object sender, EventArgs e)
         {
             Menu_DeCast.Checked = !Menu_DeCast.Checked;
@@ -283,8 +300,6 @@ namespace mat_300_framework
 
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
-            ToggleTHUD(true);
-            ToggleIterationsHUD(false);
             ToggleDeBoorHUD(false);
 
             Refresh();
@@ -299,8 +314,6 @@ namespace mat_300_framework
 
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
-            ToggleTHUD(true);
-            ToggleIterationsHUD(false);
             ToggleDeBoorHUD(false);
 
             Refresh();
@@ -315,8 +328,6 @@ namespace mat_300_framework
 
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
-            ToggleTHUD(false);
-            ToggleIterationsHUD(true);
             ToggleDeBoorHUD(false);
 
             Refresh();
@@ -405,20 +416,112 @@ namespace mat_300_framework
             }
         }
 
-        private void ToggleIterationsHUD( bool on )
+        private void SetNUD()
         {
-            label2.Visible = on;
-            IterationsUD.Visible = on;
-        }
+            if(Menu_Assign0.Checked)
+            {
+                NUD_label.Text = "&Degree";
+                NUD_label.TabIndex = 3;
 
-        private void ToggleTHUD( bool on)
-        {
-            label1.Visible = on;
-            TValueUD.Visible = on;
+                NUD.TabIndex = 5;
+                NUD.DecimalPlaces = 0;
+                NUD.Increment = (decimal)1;
+                NUD.Minimum = (decimal)1;
+                NUD.Maximum = (decimal)10;
+                NUD.Value = (decimal)1;
+
+                NUD_label.Visible = true;
+                NUD.Visible = true;
+            }
+            else if(Menu_DeCast.Checked || Menu_Bern.Checked)
+            {
+                NUD_label.Text = "&T-Value";
+                NUD_label.TabIndex = 3;
+
+                NUD.TabIndex = 5;
+                NUD.DecimalPlaces = 2;
+                NUD.Increment = (decimal)0.01f;
+                NUD.Minimum = (decimal)0;
+                NUD.Maximum = (decimal)1;
+                NUD.Value = (decimal)tVal_;
+
+                /*
+                NUD_label.Location = new System.Drawing.Point(180, 6);
+                NUD_label.Size = new System.Drawing.Size(58, 17);
+                NUD_label.TabIndex = 8;
+                NUD_label.Visible = false;
+
+                NUD.Location = new System.Drawing.Point(244, 4);
+                NUD.Size = new System.Drawing.Size(52, 22);
+                */
+
+                NUD_label.Visible = true;
+                NUD.Visible = true;
+            }
+            else if(Menu_Midpoint.Checked)
+            {
+                NUD_label.Text = "&Iterations";
+                NUD_label.TabIndex = 3;
+
+                NUD.TabIndex = 5;
+                NUD.DecimalPlaces = 0;
+                NUD.Increment = (decimal)1;
+                NUD.Minimum = (decimal)1;
+                NUD.Maximum = (decimal)6;
+                NUD.Value = (decimal)4;
+
+                /*
+                NUD_label.Location = new System.Drawing.Point(302, 6);
+                NUD_label.Size = new System.Drawing.Size(66, 17);
+                NUD_label.TabIndex = 8;
+
+                NUD.Location = new System.Drawing.Point(374, 4);
+                NUD.Size = new System.Drawing.Size(52, 22);
+                NUD.TabIndex = 9;
+                */
+            
+                NUD_label.Visible = true;
+                NUD.Visible = true;
+            }
+            else if(Menu_DeBoor.Checked)
+            {
+                NUD_label.Text = "&Degree";
+                NUD_label.TabIndex = 3;
+
+                NUD.TabIndex = 5;
+                NUD.DecimalPlaces = 0;
+                NUD.Increment = (decimal)1;
+                NUD.Minimum = (decimal)1;
+                NUD.Maximum = (decimal)10;
+                NUD.Value = (decimal)1;
+
+                /*
+                NUD_label.Location = new System.Drawing.Point(924, 636);
+                NUD_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+                NUD_label.Size = new System.Drawing.Size(55, 17);
+
+                NUD.InterceptArrowKeys = false;
+                NUD.Location = new System.Drawing.Point(988, 634);
+                NUD.Margin = new System.Windows.Forms.Padding(4);
+                NUD.Name = "NUD";
+                NUD.ReadOnly = true;
+                NUD.Size = new System.Drawing.Size(52, 22);
+                */
+ 
+                NUD_label.Visible = true;
+                NUD.Visible = true;
+            }
+            else
+            {
+                NUD_label.Visible = false;
+                NUD.Visible = false;
+            }
         }
 
         private void ToggleDeBoorHUD( bool on )
         {
+            SetNUD();
+
             // set up basic knot sequence
             if( on )
             {
@@ -430,9 +533,6 @@ namespace mat_300_framework
 
             Lbl_knot.Visible = on;
             Txt_knot.Visible = on;
-
-            Lbl_degree.Visible = on;
-            NUD_degree.Visible = on;
         }
 
         private void MAT300_Paint(object sender, PaintEventArgs e)
@@ -443,6 +543,74 @@ namespace mat_300_framework
 
         private void DrawScreen(System.Drawing.Graphics gfx)
         {
+            // you can change these variables at will; i have just chosen there
+            //  to be six sample points for every point placed on the screen
+            float steps = pts_.Count * 6;
+            float alpha = 1 / steps;
+
+            //HUD drawing code
+            Font arial = new Font("Arial", 12);
+            bool somethingselected = true;
+            int widthoffset, heightoffset;
+            String DrawLabel;
+
+            widthoffset = 10;
+            heightoffset = 30;
+
+            //if (Menu_Assign0.Checked)
+            //{
+            //    gfx.DrawString("Assignment 0", arial, Brushes.Black, widthoffset, heightoffset);
+            //}
+            //else if (Menu_DeCast.Checked)
+            //{
+            //    gfx.DrawString("DeCasteljau", arial, Brushes.Black, widthoffset, heightoffset);
+            //}
+            //else if (Menu_Midpoint.Checked)
+            //{
+            //    gfx.DrawString("Midpoint", arial, Brushes.Black, widthoffset, heightoffset);
+            //}
+            //else if (Menu_Bern.Checked)
+            //{
+            //    gfx.DrawString("Bernstein", arial, Brushes.Black, widthoffset, heightoffset);
+            //}
+            //else if (Menu_DeBoor.Checked)
+            //{
+            //    gfx.DrawString("DeBoor", arial, Brushes.Black, widthoffset, heightoffset);
+            //}
+            //else
+            //{
+            //    somethingselected = false;
+            //}
+
+            //if(somethingselected)
+            //{
+            //    widthoffset = 150;
+            //}
+
+            //widthoffset = 10;
+            //heightoffset += arial.Height;
+
+            gfx.DrawString("points: " + pts_.Count.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
+
+            if (pts_.Count > 0)
+            {
+                widthoffset += 100;
+                gfx.DrawString("t-value: " + tVal_.ToString("F"), arial, Brushes.Black, widthoffset, heightoffset);
+
+                widthoffset += 150;
+                gfx.DrawString("t-step: " + alpha.ToString("F6"), arial, Brushes.Black, widthoffset, heightoffset);
+            }
+
+            widthoffset = 10;
+            heightoffset += arial.Height;
+
+            for(int i = 0; i < pts_.Count; ++i)
+            {
+                gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);   
+            }
+
+            //END of HUD drawing
+
             // to prevent unecessary drawing
             if (pts_.Count == 0)
                 return;
@@ -476,16 +644,18 @@ namespace mat_300_framework
                 }
             }
 
-            // you can change these variables at will; i have just chosen there
-            //  to be six sample points for every point placed on the screen
-            float steps = pts_.Count * 6;
-            float alpha = 1 / steps;
 
             ///////////////////////////////////////////////////////////////////////////////
             // Drawing code for algorithms goes in here                                  //
             ///////////////////////////////////////////////////////////////////////////////
 
-            // DeCastlejau algorithm
+            if(Menu_Assign0.Checked)
+            {
+                //Point2D origin = new Point2D(gfx.);
+            }
+
+
+            // DeCastlejau algorithm for Bezier Curves
             if (Menu_DeCast.Checked)
             {
                 Point2D current_left;
@@ -520,7 +690,7 @@ namespace mat_300_framework
             // Midpoint algorithm
             if (Menu_Midpoint.Checked)
             {
-                DrawMidpoint(gfx, splinePen, pts_, (int)IterationsUD.Value);
+                DrawMidpoint(gfx, splinePen, pts_, iterations_);
             }
 
             // polygon interpolation
@@ -576,44 +746,21 @@ namespace mat_300_framework
             // Drawing code end                                                          //
             ///////////////////////////////////////////////////////////////////////////////
 
-
-            // Heads up Display drawing code
-
-            Font arial = new Font("Arial", 12);
-
-            if (Menu_DeCast.Checked)
-            {
-                gfx.DrawString("DeCasteljau", arial, Brushes.Black, 0, 30);
-            }
-            else if (Menu_Midpoint.Checked)
-            {
-                gfx.DrawString("Midpoint", arial, Brushes.Black, 0, 30);
-            }
-            else if (Menu_Bern.Checked)
-            {
-                gfx.DrawString("Bernstein", arial, Brushes.Black, 0, 30);
-            }
-            else if (Menu_DeBoor.Checked)
-            {
-                gfx.DrawString("DeBoor", arial, Brushes.Black, 0, 30);
-            }
-
-            gfx.DrawString("t-value: " + tVal_.ToString("F"), arial, Brushes.Black, 100, 30);
-
-            gfx.DrawString("t-step: " + alpha.ToString("F6"), arial, Brushes.Black, 300, 30);
-
-            gfx.DrawString(pts_.Count.ToString(), arial, Brushes.Black, 750, 30);
         }
 
         private void DrawShell(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> pts, float t)
         {
+            if (pts.Count < 3)
+                return;
+
+            /*
             Point2D temppt;
             List<Point2D> points = new List<Point2D>(pts);
             List<Point2D> shellpts = new List<Point2D>();
 
             while(points.Count > 1)
             {
-                for (int i = 0; i + 1 < shellpts.Count; ++i)
+                for (int i = 0; i + 1 < points.Count; ++i)
                 {
                     temppt = (1 - t) * points[i] + t * points[i + 1];
                     gfx.DrawEllipse(pen, temppt.x - 2.0F, temppt.y - 2.0F, 4.0F, 4.0F);
@@ -627,6 +774,7 @@ namespace mat_300_framework
 
                 points = shellpts;
             }
+            */
         }
 
         private Point2D Gamma(int start, int end, float t)

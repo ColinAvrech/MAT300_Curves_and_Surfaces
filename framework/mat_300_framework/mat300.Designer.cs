@@ -37,6 +37,7 @@ namespace mat_300_framework
             this.Menu_Points = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Shell = new System.Windows.Forms.ToolStripMenuItem();
             this.methodToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assign0 = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_DeCast = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Bern = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,18 +46,12 @@ namespace mat_300_framework
             this.Menu_Inter_Splines = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_DeBoor = new System.Windows.Forms.ToolStripMenuItem();
             this.Txt_knot = new System.Windows.Forms.TextBox();
-            this.Lbl_degree = new System.Windows.Forms.Label();
             this.Lbl_knot = new System.Windows.Forms.Label();
-            this.NUD_degree = new System.Windows.Forms.NumericUpDown();
+            this.NUD = new System.Windows.Forms.NumericUpDown();
+            this.NUD_label = new System.Windows.Forms.Label();
             this.CB_cont = new System.Windows.Forms.CheckBox();
-            this.TValueUD = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.IterationsUD = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.NUD_degree)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TValueUD)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.IterationsUD)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NUD)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -138,14 +133,23 @@ namespace mat_300_framework
             // methodToolStripMenuItem
             // 
             this.methodToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Menu_DeCast,
-            this.Menu_Bern,
-            this.Menu_Midpoint,
-            this.Menu_Inter,
-            this.Menu_DeBoor});
+            this.Menu_Assign0}); //,
+            //this.Menu_DeCast,
+            //this.Menu_Bern,
+            //this.Menu_Midpoint,
+            //this.Menu_Inter,
+            //this.Menu_DeBoor
+            //});
             this.methodToolStripMenuItem.Name = "methodToolStripMenuItem";
             this.methodToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
             this.methodToolStripMenuItem.Text = "&Method";
+            //
+            // Menu_Assignment0
+            //
+            this.Menu_Assign0.Name = "Menu_Assign0";
+            this.Menu_Assign0.Size = new System.Drawing.Size(157, 24);
+            this.Menu_Assign0.Text = "Assignment &0";
+            this.Menu_Assign0.Click += new System.EventHandler(this.Menu_Assign0_Click);
             // 
             // Menu_DeCast
             // 
@@ -208,17 +212,6 @@ namespace mat_300_framework
             this.Txt_knot.Visible = false;
             this.Txt_knot.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Txt_knot_KeyPress);
             // 
-            // Lbl_degree
-            // 
-            this.Lbl_degree.AutoSize = true;
-            this.Lbl_degree.Location = new System.Drawing.Point(924, 636);
-            this.Lbl_degree.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Lbl_degree.Name = "Lbl_degree";
-            this.Lbl_degree.Size = new System.Drawing.Size(55, 17);
-            this.Lbl_degree.TabIndex = 3;
-            this.Lbl_degree.Text = "Degree";
-            this.Lbl_degree.Visible = false;
-            // 
             // Lbl_knot
             // 
             this.Lbl_knot.AutoSize = true;
@@ -230,27 +223,38 @@ namespace mat_300_framework
             this.Lbl_knot.Text = "Knot Seq.";
             this.Lbl_knot.Visible = false;
             // 
-            // NUD_degree
+            // NUD_label
             // 
-            this.NUD_degree.InterceptArrowKeys = false;
-            this.NUD_degree.Location = new System.Drawing.Point(988, 634);
-            this.NUD_degree.Margin = new System.Windows.Forms.Padding(4);
-            this.NUD_degree.Minimum = new decimal(new int[] {
+            this.NUD_label.AutoSize = true;
+            this.NUD_label.Location = new System.Drawing.Point(924, 636);
+            this.NUD_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.NUD_label.Name = "NUD_label";
+            this.NUD_label.Size = new System.Drawing.Size(55, 17);
+            this.NUD_label.TabIndex = 3;
+            this.NUD_label.Text = "Degree";
+            this.NUD_label.Visible = false;
+            // 
+            // NUD
+            // 
+            this.NUD.InterceptArrowKeys = false;
+            this.NUD.Location = new System.Drawing.Point(988, 634);
+            this.NUD.Margin = new System.Windows.Forms.Padding(4);
+            this.NUD.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.NUD_degree.Name = "NUD_degree";
-            this.NUD_degree.ReadOnly = true;
-            this.NUD_degree.Size = new System.Drawing.Size(52, 22);
-            this.NUD_degree.TabIndex = 5;
-            this.NUD_degree.Value = new decimal(new int[] {
+            this.NUD.Name = "NUD";
+            this.NUD.ReadOnly = true;
+            this.NUD.Size = new System.Drawing.Size(52, 22);
+            this.NUD.TabIndex = 5;
+            this.NUD.Value = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.NUD_degree.Visible = false;
-            this.NUD_degree.ValueChanged += new System.EventHandler(this.NUD_degree_ValueChanged);
+            this.NUD.Visible = false;
+            this.NUD.ValueChanged += new System.EventHandler(this.NUD_ValueChanged);
             // 
             // CB_cont
             // 
@@ -267,84 +271,16 @@ namespace mat_300_framework
             this.CB_cont.Visible = false;
             this.CB_cont.CheckedChanged += new System.EventHandler(this.CB_cont_CheckedChanged);
             // 
-            // TValueUD
-            // 
-            this.TValueUD.AutoSize = true;
-            this.TValueUD.DecimalPlaces = 2;
-            this.TValueUD.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.TValueUD.Location = new System.Drawing.Point(244, 4);
-            this.TValueUD.Maximum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.TValueUD.Name = "TValueUD";
-            this.TValueUD.Size = new System.Drawing.Size(52, 22);
-            this.TValueUD.TabIndex = 8;
-            this.TValueUD.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.TValueUD.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            65536});
-            this.TValueUD.ValueChanged += new System.EventHandler(this.TValueUD_ValueChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(180, 6);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(58, 17);
-            this.label1.TabIndex = 9;
-            this.label1.Text = "&T-Value";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(302, 6);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(66, 17);
-            this.label2.TabIndex = 10;
-            this.label2.Text = "&Iterations";
-            // 
-            // IterationsUD
-            // 
-            this.IterationsUD.AutoSize = true;
-            this.IterationsUD.Location = new System.Drawing.Point(374, 4);
-            this.IterationsUD.Maximum = new decimal(new int[] {
-            6,
-            0,
-            0,
-            0});
-            this.IterationsUD.Name = "IterationsUD";
-            this.IterationsUD.Size = new System.Drawing.Size(52, 22);
-            this.IterationsUD.TabIndex = 11;
-            this.IterationsUD.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.IterationsUD.Value = new decimal(new int[] {
-            4,
-            0,
-            0,
-            0});
-            this.IterationsUD.ValueChanged += new System.EventHandler(this.IterationsUD_ValueChanged);
-            // 
             // MAT300
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(1056, 705);
-            this.Controls.Add(this.IterationsUD);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.TValueUD);
             this.Controls.Add(this.CB_cont);
-            this.Controls.Add(this.NUD_degree);
+            this.Controls.Add(this.NUD);
             this.Controls.Add(this.Lbl_knot);
-            this.Controls.Add(this.Lbl_degree);
+            this.Controls.Add(this.NUD_label);
             this.Controls.Add(this.Txt_knot);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -355,11 +291,10 @@ namespace mat_300_framework
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MAT300_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MAT300_MouseMove);
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.MAT300_MouseWheel);
+            //this.Resize += new System.Windows.Forms.LayoutEventHandler(this.MAT300_Resize);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.NUD_degree)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TValueUD)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.IterationsUD)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NUD)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -375,6 +310,7 @@ namespace mat_300_framework
         private System.Windows.Forms.ToolStripMenuItem Menu_Points;
         private System.Windows.Forms.ToolStripMenuItem methodToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem Menu_Shell;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assign0;
         private System.Windows.Forms.ToolStripMenuItem Menu_DeCast;
         private System.Windows.Forms.ToolStripMenuItem Menu_Bern;
         private System.Windows.Forms.ToolStripMenuItem Menu_Midpoint;
@@ -384,14 +320,10 @@ namespace mat_300_framework
         private System.Windows.Forms.ToolStripMenuItem Menu_Inter_Poly;
         private System.Windows.Forms.ToolStripMenuItem Menu_Inter_Splines;
         private System.Windows.Forms.TextBox Txt_knot;
-        private System.Windows.Forms.Label Lbl_degree;
+        private System.Windows.Forms.Label NUD_label;
         private System.Windows.Forms.Label Lbl_knot;
-        private System.Windows.Forms.NumericUpDown NUD_degree;
+        private System.Windows.Forms.NumericUpDown NUD;
         private System.Windows.Forms.CheckBox CB_cont;
-        private System.Windows.Forms.NumericUpDown TValueUD;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.NumericUpDown IterationsUD;
     }
 }
 
