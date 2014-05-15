@@ -14,6 +14,7 @@ namespace mat_300_framework
         {
             InitializeComponent();
 
+            WindowSize_ = this.ClientSize;
             pts_ = new List<Point2D>();
             tVal_ = 0.5F;
             degree_ = 0;
@@ -22,22 +23,27 @@ namespace mat_300_framework
             rnd_ = new Random();
         }
 
+        static Size WindowSize_;
+
         // Point class for general math use
         protected class Point2D : System.Object
         {
             public float x;
             public float y;
+            public bool inscreenspace;
 
             public Point2D(float _x, float _y)
             {
                 x = _x;
                 y = _y;
+                inscreenspace = true;
             }
 
             public Point2D(Point2D rhs)
             {
                 x = rhs.x;
                 y = rhs.y;
+                inscreenspace = rhs.inscreenspace;
             }
 
             public override String ToString()
@@ -77,6 +83,22 @@ namespace mat_300_framework
                 return new Point2D(rhs.x * t, rhs.y * t);
             }
 
+            public Point2D ToWorldSpace()
+            {
+                Point2D result = new Point2D( 2 * (x/WindowSize_.Width) - 0.5f,
+                                              -8 * (y/WindowSize_.Height) + 4.0f);
+                result.inscreenspace = false;
+                return result;
+            }
+
+            public Point2D ToScreenSpace()
+            {
+                Point2D result = new Point2D( (0.5f * x + 0.25f) * WindowSize_.Width,
+                                              ((-1.0f/8.0f * y) + 0.5f) * WindowSize_.Height);
+                result.inscreenspace = true;
+                return result;
+            }
+
             // returns the drawing subsytems' version of a point for drawing.
             public System.Drawing.Point P()
             {
@@ -84,7 +106,6 @@ namespace mat_300_framework
             }
         };
 
-        Size WindowSize;
         List<Point2D> pts_; // the list of points used in internal algthms
         float tVal_; // t-value used for shell drawing
         int degree_; // degree of deboor subsplines
@@ -128,7 +149,7 @@ namespace mat_300_framework
         private void MAT300_Resize(Object sender, EventHandler e)
         {
             // Set the size of button1 to the size of the client area of the form.
-            WindowSize = this.ClientSize;
+            WindowSize_ = this.ClientSize;
         }
 
         private void MAT300_MouseMove(object sender, MouseEventArgs e)
@@ -139,7 +160,10 @@ namespace mat_300_framework
                 // grab the closest point and snap it to the mouse
                 int index = PickPt(new Point2D(e.X, e.Y));
 
-                pts_[index].x = e.X;
+                if (!Menu_Assign0.Checked)
+                {
+                    pts_[index].x = e.X;
+                }
                 pts_[index].y = e.Y;
 
                 Refresh();
@@ -152,7 +176,7 @@ namespace mat_300_framework
             if (e.Button == MouseButtons.Left)
             {
                 // add a new point to the controlPoints
-                pts_.Add(new Point2D(e.X, e.Y));
+                pts_.Add(new Point2D( e.X, e.Y));
 
                 if (Menu_DeBoor.Checked)
                 {
@@ -550,9 +574,9 @@ namespace mat_300_framework
 
             //HUD drawing code
             Font arial = new Font("Arial", 12);
-            bool somethingselected = true;
             int widthoffset, heightoffset;
-            String DrawLabel;
+            //bool somethingselected = true;
+            //String DrawLabel;
 
             widthoffset = 10;
             heightoffset = 30;
@@ -606,13 +630,13 @@ namespace mat_300_framework
 
             for(int i = 0; i < pts_.Count; ++i)
             {
-                gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);   
+                gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToWorldSpace().ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);   
             }
 
             //END of HUD drawing
 
             // to prevent unecessary drawing
-            if (pts_.Count == 0)
+            if (pts_.Count == 0 && !Menu_Assign0.Checked)
                 return;
 
             // pens used for drawing elements of the display
@@ -644,13 +668,53 @@ namespace mat_300_framework
                 }
             }
 
-
             ///////////////////////////////////////////////////////////////////////////////
             // Drawing code for algorithms goes in here                                  //
             ///////////////////////////////////////////////////////////////////////////////
 
             if(Menu_Assign0.Checked)
             {
+                //Draw Axes
+                Point2D Origin = new Point2D(0.0f, 0.0f);
+                Point2D XPos = new Point2D(1.0f, 0.0f);
+                Point2D YPos = new Point2D(0.0f, 4.0f);
+                Point2D YNeg = new Point2D(0.0f, -4.0f);
+
+
+                gfx.DrawLine(polyPen, YNeg.ToScreenSpace().P(), YPos.ToScreenSpace().P());
+                gfx.DrawLine(polyPen, Origin.ToScreenSpace().P(), XPos.ToScreenSpace().P());
+
+                Point2D Tick1 = new Point2D(YPos);
+                Point2D Tick2 = new Point2D(YPos);
+
+               
+                Tick1.x = -0.01f * (XPos.x - Origin.x);
+                Tick2.x = 0.01f * (XPos.x - Origin.x);
+
+                //Draw Tick Marks
+                while(Tick1.y > YNeg.y)
+                {
+                    Tick2.y = Tick1.y;
+                    gfx.DrawLine(polyPen, Tick1.ToScreenSpace().P(), Tick2.ToScreenSpace().P());
+                    Tick1.y -= 1.0f;
+                }
+
+                Tick1.x = Tick2.x = XPos.x;
+                Tick1.y = -0.01f * (YPos.y - YNeg.y);
+                Tick2.y = 0.01f * (YPos.y - YNeg.y);
+
+                gfx.DrawLine(polyPen, Tick1.ToScreenSpace().P(), Tick2.ToScreenSpace().P());
+
+                //Create Coefficient Points
+                //for(int i = 0; i < degree_ + 1; ++i)
+                //{
+                //    pts_.Add( new Point2D(( (float)i/(float)(degree_ + 1) * (XPos.x - Origin.x) ), 1.0f ) );
+                //}
+
+                //gfx.DrawString(Tick1.ToScreenSpace().ToString(), arial, Brushes.Black, 200, 200);
+
+                //Draw Polynomial
+                //
                 //Point2D origin = new Point2D(gfx.);
             }
 
