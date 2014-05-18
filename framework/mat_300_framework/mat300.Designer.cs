@@ -37,7 +37,6 @@ namespace mat_300_framework
             this.Menu_Points = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Shell = new System.Windows.Forms.ToolStripMenuItem();
             this.methodToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_Assign0 = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_DeCast = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Bern = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
@@ -133,35 +132,23 @@ namespace mat_300_framework
             // methodToolStripMenuItem
             // 
             this.methodToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Menu_Assign0}); //,
-            //this.Menu_DeCast,
-            //this.Menu_Bern,
-            //this.Menu_Midpoint,
-            //this.Menu_Inter,
-            //this.Menu_DeBoor
-            //});
+            this.Menu_DeCast,
+            this.Menu_Bern});
             this.methodToolStripMenuItem.Name = "methodToolStripMenuItem";
             this.methodToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
             this.methodToolStripMenuItem.Text = "&Method";
-            //
-            // Menu_Assignment0
-            //
-            this.Menu_Assign0.Name = "Menu_Assign0";
-            this.Menu_Assign0.Size = new System.Drawing.Size(157, 24);
-            this.Menu_Assign0.Text = "Assignment &0";
-            this.Menu_Assign0.Click += new System.EventHandler(this.Menu_Assign0_Click);
             // 
             // Menu_DeCast
             // 
             this.Menu_DeCast.Name = "Menu_DeCast";
-            this.Menu_DeCast.Size = new System.Drawing.Size(157, 24);
+            this.Menu_DeCast.Size = new System.Drawing.Size(175, 24);
             this.Menu_DeCast.Text = "&DeCastlejau";
             this.Menu_DeCast.Click += new System.EventHandler(this.Menu_DeCast_Click);
             // 
             // Menu_Bern
             // 
             this.Menu_Bern.Name = "Menu_Bern";
-            this.Menu_Bern.Size = new System.Drawing.Size(157, 24);
+            this.Menu_Bern.Size = new System.Drawing.Size(175, 24);
             this.Menu_Bern.Text = "&Bernstein";
             this.Menu_Bern.Click += new System.EventHandler(this.Menu_Bern_Click);
             // 
@@ -223,17 +210,6 @@ namespace mat_300_framework
             this.Lbl_knot.Text = "Knot Seq.";
             this.Lbl_knot.Visible = false;
             // 
-            // NUD_label
-            // 
-            this.NUD_label.AutoSize = true;
-            this.NUD_label.Location = new System.Drawing.Point(924, 636);
-            this.NUD_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.NUD_label.Name = "NUD_label";
-            this.NUD_label.Size = new System.Drawing.Size(55, 17);
-            this.NUD_label.TabIndex = 3;
-            this.NUD_label.Text = "Degree";
-            this.NUD_label.Visible = false;
-            // 
             // NUD
             // 
             this.NUD.InterceptArrowKeys = false;
@@ -255,6 +231,17 @@ namespace mat_300_framework
             0});
             this.NUD.Visible = false;
             this.NUD.ValueChanged += new System.EventHandler(this.NUD_ValueChanged);
+            // 
+            // NUD_label
+            // 
+            this.NUD_label.AutoSize = true;
+            this.NUD_label.Location = new System.Drawing.Point(924, 636);
+            this.NUD_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.NUD_label.Name = "NUD_label";
+            this.NUD_label.Size = new System.Drawing.Size(55, 17);
+            this.NUD_label.TabIndex = 3;
+            this.NUD_label.Text = "Degree";
+            this.NUD_label.Visible = false;
             // 
             // CB_cont
             // 
@@ -291,7 +278,6 @@ namespace mat_300_framework
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MAT300_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MAT300_MouseMove);
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.MAT300_MouseWheel);
-            //this.Resize += new System.Windows.Forms.LayoutEventHandler(this.MAT300_Resize);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD)).EndInit();

@@ -17,7 +17,7 @@ namespace mat_300_framework
             WindowSize_ = this.ClientSize;
             pts_ = new List<Point2D>();
             tVal_ = 0.5F;
-            degree_ = 0;
+            degree_ = 1;
             knot_ = new List<float>();
             EdPtCont_ = true;
             rnd_ = new Random();
@@ -85,8 +85,8 @@ namespace mat_300_framework
 
             public Point2D ToWorldSpace()
             {
-                Point2D result = new Point2D( 2 * (x/WindowSize_.Width) - 0.5f,
-                                              -8 * (y/WindowSize_.Height) + 4.0f);
+                Point2D result = new Point2D( 2 * ((float)x/(float)WindowSize_.Width) - 0.5f,
+                                              -8 * ((float)y/(float)WindowSize_.Height) + 4.0f);
                 result.inscreenspace = false;
                 return result;
             }
@@ -94,7 +94,7 @@ namespace mat_300_framework
             public Point2D ToScreenSpace()
             {
                 Point2D result = new Point2D( (0.5f * x + 0.25f) * WindowSize_.Width,
-                                              ((-1.0f/8.0f * y) + 0.5f) * WindowSize_.Height);
+                                              ((-0.125f * y) + 0.5f) * WindowSize_.Height); //-0.125 = -1/8
                 result.inscreenspace = true;
                 return result;
             }
@@ -102,18 +102,18 @@ namespace mat_300_framework
             // returns the drawing subsytems' version of a point for drawing.
             public System.Drawing.Point P()
             {
-                return new System.Drawing.Point((int)x, (int)y);
+                return new System.Drawing.Point((int)ToScreenSpace().x, (int)ToScreenSpace().y);
             }
         };
 
         List<Point2D> pts_; // the list of points used in internal algthms
+        Point2D MouseInWorld_;
         float tVal_; // t-value used for shell drawing
         int degree_; // degree of deboor subsplines
+        //int iterations_; //iterations for midpoint subdivision
         List<float> knot_; // knot sequence for deboor
         bool EdPtCont_; // end point continuity flag for std knot seq contruction
         Random rnd_; // random number generator
-
-        int iterations_;
 
         // pickpt returns an index of the closest point to the passed in point
         //  -- usually a mouse position
@@ -154,26 +154,33 @@ namespace mat_300_framework
 
         private void MAT300_MouseMove(object sender, MouseEventArgs e)
         {
+            MouseInWorld_ = new Point2D(e.X, e.Y).ToWorldSpace();
+
             // if the right mouse button is being pressed
             if (pts_.Count != 0 && e.Button == MouseButtons.Right)
             {
                 // grab the closest point and snap it to the mouse
-                int index = PickPt(new Point2D(e.X, e.Y));
+                int index = PickPt(MouseInWorld_);
 
-                if (!Menu_Assign0.Checked)
-                {
-                    pts_[index].x = e.X;
-                }
-                pts_[index].y = e.Y;
-
-                Refresh();
+                //if (!Menu_Assign0.Checked)
+                //{
+                //    pts_[index].x = e.X;
+                //    pts_[index].y = e.Y;
+                //}
+                //else
+                //{
+                    pts_[index].y = -8 * ((float)e.Y/(float)WindowSize_.Height) + 4.0f;
+                //}
             }
+
+            Refresh();
         }
 
         private void MAT300_MouseDown(object sender, MouseEventArgs e)
         {
+            /*
             // if the left mouse button was clicked
-            if (e.Button == MouseButtons.Left)
+            if (e.Button == MouseButtons.Left && !Menu_Assign0.Checked)
             {
                 // add a new point to the controlPoints
                 pts_.Add(new Point2D( e.X, e.Y));
@@ -188,10 +195,10 @@ namespace mat_300_framework
             }
 
             // if there are points and the middle mouse button was pressed
-            if (pts_.Count != 0 && e.Button == MouseButtons.Middle)
+            if (pts_.Count != 0 && e.Button == MouseButtons.Middle && !Menu_Assign0.Checked)
             {
                 // then delete the closest point
-                int index = PickPt(new Point2D(e.X, e.Y));
+                int index = PickPt(new Point2D(e.X, e.Y).ToWorldSpace());
 
                 pts_.RemoveAt(index);
 
@@ -203,6 +210,7 @@ namespace mat_300_framework
 
                 Refresh();
             }
+            */
         }
 
         private void MAT300_MouseWheel(object sender, MouseEventArgs e)
@@ -226,12 +234,22 @@ namespace mat_300_framework
             if (pts_.Count == 0)
                 return;
 
-            if(Menu_Assign0.Checked)
+            if (Menu_DeCast.Checked || Menu_Bern.Checked)
+            //if (Menu_Assign0.Checked)
             {
                 degree_ = (int)NUD.Value;
 
                 NUD.Value = degree_;
+
+                pts_.Clear();
+
+                //Create Coefficient Points
+                for (int i = 0; i < degree_ + 1; ++i)
+                {
+                    pts_.Add(new Point2D(((float)i / (float)degree_), 1.0f));
+                }
             }
+            /*
             else if( Menu_DeCast.Checked || Menu_Bern.Checked )
             {
                 tVal_ = (float)NUD.Value;
@@ -252,6 +270,7 @@ namespace mat_300_framework
 
                 NUD.Value = degree_;
             }
+            */
 
             Refresh();
         }
@@ -310,7 +329,24 @@ namespace mat_300_framework
         {
             Menu_Assign0.Checked = !Menu_Assign0.Checked;
 
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
+
+            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
+
+            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
+
             ToggleDeBoorHUD(false);
+
+            pts_.Clear();
+
+            if(Menu_Assign0.Checked)
+            {
+                //Create Coefficient Points
+                for (int i = 0; i < degree_ + 1; ++i)
+                {
+                    pts_.Add(new Point2D(( (float)i/(float)degree_), 1.0f));
+                }
+            }
 
             Refresh();
         }
@@ -326,6 +362,18 @@ namespace mat_300_framework
 
             ToggleDeBoorHUD(false);
 
+            //Remove after first assignment. 
+            pts_.Clear();
+
+            if(Menu_DeCast.Checked)
+            {
+                //Create Coefficient Points
+                for (int i = 0; i < degree_ + 1; ++i)
+                {
+                    pts_.Add(new Point2D(((float)i / (float)degree_), 1.0f));
+                }
+            }
+
             Refresh();
         }
 
@@ -339,6 +387,18 @@ namespace mat_300_framework
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
             ToggleDeBoorHUD(false);
+
+            //Remove after first assignment. 
+            pts_.Clear();
+
+            if (Menu_Bern.Checked)
+            {
+                //Create Coefficient Points
+                for (int i = 0; i < degree_ + 1; ++i)
+                {
+                    pts_.Add(new Point2D(((float)i / (float)degree_), 1.0f));
+                }
+            }
 
             Refresh();
         }
@@ -442,7 +502,8 @@ namespace mat_300_framework
 
         private void SetNUD()
         {
-            if(Menu_Assign0.Checked)
+            if(Menu_DeCast.Checked || Menu_Bern.Checked)
+            //if(Menu_Assign0.Checked)
             {
                 NUD_label.Text = "&Degree";
                 NUD_label.TabIndex = 3;
@@ -451,12 +512,13 @@ namespace mat_300_framework
                 NUD.DecimalPlaces = 0;
                 NUD.Increment = (decimal)1;
                 NUD.Minimum = (decimal)1;
-                NUD.Maximum = (decimal)10;
-                NUD.Value = (decimal)1;
+                NUD.Maximum = (decimal)20;
+                NUD.Value = (decimal)degree_;
 
                 NUD_label.Visible = true;
                 NUD.Visible = true;
             }
+            /*
             else if(Menu_DeCast.Checked || Menu_Bern.Checked)
             {
                 NUD_label.Text = "&T-Value";
@@ -468,16 +530,6 @@ namespace mat_300_framework
                 NUD.Minimum = (decimal)0;
                 NUD.Maximum = (decimal)1;
                 NUD.Value = (decimal)tVal_;
-
-                /*
-                NUD_label.Location = new System.Drawing.Point(180, 6);
-                NUD_label.Size = new System.Drawing.Size(58, 17);
-                NUD_label.TabIndex = 8;
-                NUD_label.Visible = false;
-
-                NUD.Location = new System.Drawing.Point(244, 4);
-                NUD.Size = new System.Drawing.Size(52, 22);
-                */
 
                 NUD_label.Visible = true;
                 NUD.Visible = true;
@@ -493,16 +545,6 @@ namespace mat_300_framework
                 NUD.Minimum = (decimal)1;
                 NUD.Maximum = (decimal)6;
                 NUD.Value = (decimal)4;
-
-                /*
-                NUD_label.Location = new System.Drawing.Point(302, 6);
-                NUD_label.Size = new System.Drawing.Size(66, 17);
-                NUD_label.TabIndex = 8;
-
-                NUD.Location = new System.Drawing.Point(374, 4);
-                NUD.Size = new System.Drawing.Size(52, 22);
-                NUD.TabIndex = 9;
-                */
             
                 NUD_label.Visible = true;
                 NUD.Visible = true;
@@ -517,24 +559,12 @@ namespace mat_300_framework
                 NUD.Increment = (decimal)1;
                 NUD.Minimum = (decimal)1;
                 NUD.Maximum = (decimal)10;
-                NUD.Value = (decimal)1;
-
-                /*
-                NUD_label.Location = new System.Drawing.Point(924, 636);
-                NUD_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-                NUD_label.Size = new System.Drawing.Size(55, 17);
-
-                NUD.InterceptArrowKeys = false;
-                NUD.Location = new System.Drawing.Point(988, 634);
-                NUD.Margin = new System.Windows.Forms.Padding(4);
-                NUD.Name = "NUD";
-                NUD.ReadOnly = true;
-                NUD.Size = new System.Drawing.Size(52, 22);
-                */
+                NUD.Value = (decimal)degree_;
  
                 NUD_label.Visible = true;
                 NUD.Visible = true;
             }
+            */
             else
             {
                 NUD_label.Visible = false;
@@ -567,6 +597,43 @@ namespace mat_300_framework
 
         private void DrawScreen(System.Drawing.Graphics gfx)
         {
+            // to prevent unecessary drawing
+            if (pts_.Count == 0)
+                return;
+
+            // pens used for drawing elements of the display
+            System.Drawing.Pen polyPen = new Pen(Color.Gray, 1.0f);
+            System.Drawing.Pen shellPen = new Pen(Color.LightGray, 0.5f);
+            System.Drawing.Pen splinePen = new Pen(Color.Black, 1.5f);
+
+            if (Menu_Shell.Checked)
+            {
+                // draw the shell
+                DrawShell(gfx, shellPen, pts_, tVal_);
+            }
+
+            if (Menu_Polyline.Checked)
+            {
+                // draw the control poly
+                for (int i = 1; i < pts_.Count; ++i)
+                {
+                    gfx.DrawLine(polyPen, pts_[i - 1].P(), pts_[i].P());
+                }
+            }
+
+            if (Menu_Points.Checked)
+            {
+                // draw the control points
+                for(int i = 0; i < pts_.Count; ++i)
+                {
+                    gfx.DrawEllipse(polyPen, pts_[i].P().X - 2.0f, pts_[i].P().Y - 2.0f, 4.0f, 4.0f);
+                }
+            }
+
+            ///////////////////////////////////////////////////////////////////////////////
+            // Drawing code for algorithms goes in here                                  //
+            ///////////////////////////////////////////////////////////////////////////////
+
             // you can change these variables at will; i have just chosen there
             //  to be six sample points for every point placed on the screen
             float steps = pts_.Count * 6;
@@ -614,65 +681,67 @@ namespace mat_300_framework
             //widthoffset = 10;
             //heightoffset += arial.Height;
 
-            gfx.DrawString("points: " + pts_.Count.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
-
-            if (pts_.Count > 0)
+            if( !(pts_.Count < 2) && (Menu_DeCast.Checked || Menu_Bern.Checked) )
+            //if (Menu_Assign0.Checked)
             {
-                widthoffset += 100;
-                gfx.DrawString("t-value: " + tVal_.ToString("F"), arial, Brushes.Black, widthoffset, heightoffset);
+                Point2D temp = new Point2D(MouseInWorld_);
+                if(Menu_DeCast.Checked)
+                {
+                    temp.y = DeCastlejauP(temp.x);
+                }
+                else if (Menu_Bern.Checked)
+                {
+                    temp.y = BernsteinP(temp.x);
+                }
 
-                widthoffset += 150;
-                gfx.DrawString("t-step: " + alpha.ToString("F6"), arial, Brushes.Black, widthoffset, heightoffset);
+                gfx.DrawString("Mouse(" + temp.x.ToString() + ", " + temp.y.ToString() + ") ", arial, Brushes.Black, widthoffset, heightoffset);
+                gfx.DrawEllipse(splinePen, temp.P().X - 2.0f, temp.P().Y - 2.0f, 4.0f, 4.0f);
+
+                heightoffset += arial.Height;
+                gfx.DrawString("Coefficients :" + pts_.Count.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
             }
+            
+            //else
+            //{
+            //    gfx.DrawString("points: " + pts_.Count.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
+            
+            //    if (pts_.Count > 0)
+            //    {
+            //        widthoffset += 100;
+            //        gfx.DrawString("t-value: " + tVal_.ToString("F"), arial, Brushes.Black, widthoffset, heightoffset);
+
+            //        widthoffset += 150;
+            //        gfx.DrawString("t-step: " + alpha.ToString("F6"), arial, Brushes.Black, widthoffset, heightoffset);
+            //    }
+            //}
 
             widthoffset = 10;
             heightoffset += arial.Height;
 
-            for(int i = 0; i < pts_.Count; ++i)
+            //if (Menu_Assign0.Checked)
+            //{
+            for (int i = 0; i < pts_.Count; ++i)
             {
-                gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToWorldSpace().ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);   
+                gfx.DrawString("A" + i.ToString() + ": " + pts_[i].y.ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
             }
+            //}
+            //else
+            //{
+            //    for (int i = 0; i < pts_.Count; ++i)
+            //    {
+            //        gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
+            //    }
+            //}
 
             //END of HUD drawing
 
-            // to prevent unecessary drawing
-            if (pts_.Count == 0 && !Menu_Assign0.Checked)
-                return;
-
-            // pens used for drawing elements of the display
-            System.Drawing.Pen polyPen = new Pen(Color.Gray, 1.0f);
-            System.Drawing.Pen shellPen = new Pen(Color.LightGray, 0.5f);
-            System.Drawing.Pen splinePen = new Pen(Color.Black, 1.5f);
-
-            if (Menu_Shell.Checked)
-            {
-                // draw the shell
-                DrawShell(gfx, shellPen, pts_, tVal_);
-            }
-
-            if (Menu_Polyline.Checked)
-            {
-                // draw the control poly
-                for (int i = 1; i < pts_.Count; ++i)
-                {
-                    gfx.DrawLine(polyPen, pts_[i - 1].P(), pts_[i].P());
-                }
-            }
-
-            if (Menu_Points.Checked)
-            {
-                // draw the control points
-                foreach (Point2D pt in pts_)
-                {
-                    gfx.DrawEllipse(polyPen, pt.x - 2.0F, pt.y - 2.0F, 4.0F, 4.0F);
-                }
-            }
 
             ///////////////////////////////////////////////////////////////////////////////
-            // Drawing code for algorithms goes in here                                  //
+            // Polynomials                                                               //
             ///////////////////////////////////////////////////////////////////////////////
 
-            if(Menu_Assign0.Checked)
+            //DeCastlejau Polynomial
+            if (Menu_DeCast.Checked)
             {
                 //Draw Axes
                 Point2D Origin = new Point2D(0.0f, 0.0f);
@@ -681,21 +750,21 @@ namespace mat_300_framework
                 Point2D YNeg = new Point2D(0.0f, -4.0f);
 
 
-                gfx.DrawLine(polyPen, YNeg.ToScreenSpace().P(), YPos.ToScreenSpace().P());
-                gfx.DrawLine(polyPen, Origin.ToScreenSpace().P(), XPos.ToScreenSpace().P());
+                gfx.DrawLine(polyPen, YNeg.P(), YPos.P());
+                gfx.DrawLine(polyPen, Origin.P(), XPos.P());
 
                 Point2D Tick1 = new Point2D(YPos);
                 Point2D Tick2 = new Point2D(YPos);
 
-               
+
                 Tick1.x = -0.01f * (XPos.x - Origin.x);
                 Tick2.x = 0.01f * (XPos.x - Origin.x);
 
                 //Draw Tick Marks
-                while(Tick1.y > YNeg.y)
+                while (Tick1.y > YNeg.y)
                 {
                     Tick2.y = Tick1.y;
-                    gfx.DrawLine(polyPen, Tick1.ToScreenSpace().P(), Tick2.ToScreenSpace().P());
+                    gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
                     Tick1.y -= 1.0f;
                 }
 
@@ -703,22 +772,81 @@ namespace mat_300_framework
                 Tick1.y = -0.01f * (YPos.y - YNeg.y);
                 Tick2.y = 0.01f * (YPos.y - YNeg.y);
 
-                gfx.DrawLine(polyPen, Tick1.ToScreenSpace().P(), Tick2.ToScreenSpace().P());
-
-                //Create Coefficient Points
-                //for(int i = 0; i < degree_ + 1; ++i)
-                //{
-                //    pts_.Add( new Point2D(( (float)i/(float)(degree_ + 1) * (XPos.x - Origin.x) ), 1.0f ) );
-                //}
-
-                //gfx.DrawString(Tick1.ToScreenSpace().ToString(), arial, Brushes.Black, 200, 200);
+                gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
 
                 //Draw Polynomial
-                //
-                //Point2D origin = new Point2D(gfx.);
+                Point2D current_left;
+                Point2D current_right = new Point2D(0.0f, DeCastlejauP(0));
+
+                for (float t = alpha; t < 1; t += alpha)
+                {
+                    current_left = current_right;
+                    current_right = new Point2D(t, DeCastlejauP(t));
+                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
+                }
+
+                current_left = current_right;
+                current_right = new Point2D(1.0f, DeCastlejauP(1.0f));
+
+                gfx.DrawLine(splinePen, current_left.P(), current_right.P());
             }
 
+            ////Bernstein Polynomial
+            if (Menu_Bern.Checked)
+            {
 
+                //Draw Axes
+                Point2D Origin = new Point2D(0.0f, 0.0f);
+                Point2D XPos = new Point2D(1.0f, 0.0f);
+                Point2D YPos = new Point2D(0.0f, 4.0f);
+                Point2D YNeg = new Point2D(0.0f, -4.0f);
+
+
+                gfx.DrawLine(polyPen, YNeg.P(), YPos.P());
+                gfx.DrawLine(polyPen, Origin.P(), XPos.P());
+
+                Point2D Tick1 = new Point2D(YPos);
+                Point2D Tick2 = new Point2D(YPos);
+
+
+                Tick1.x = -0.01f * (XPos.x - Origin.x);
+                Tick2.x = 0.01f * (XPos.x - Origin.x);
+
+                //Draw Tick Marks
+                while (Tick1.y > YNeg.y)
+                {
+                    Tick2.y = Tick1.y;
+                    gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
+                    Tick1.y -= 1.0f;
+                }
+
+                Tick1.x = Tick2.x = XPos.x;
+                Tick1.y = -0.01f * (YPos.y - YNeg.y);
+                Tick2.y = 0.01f * (YPos.y - YNeg.y);
+
+                gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
+
+                //Draw Polynomial
+                Point2D current_left;
+                Point2D current_right = new Point2D(0.0f, BernsteinP(0));
+
+                for (float t = alpha; t < 1; t += alpha)
+                {
+                    current_left = current_right;
+                    current_right = new Point2D(t, BernsteinP(t));
+                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
+                }
+
+                current_left = current_right;
+                current_right = new Point2D(1.0f, BernsteinP(1.0f));
+
+                gfx.DrawLine(splinePen, current_left.P(), current_right.P());
+            }
+
+            ///////////////////////////////////////////////////////////////////////////////
+            // Bezier Curves                                                             //
+            ///////////////////////////////////////////////////////////////////////////////
+            /*
             // DeCastlejau algorithm for Bezier Curves
             if (Menu_DeCast.Checked)
             {
@@ -805,6 +933,7 @@ namespace mat_300_framework
 
                 gfx.DrawLine(splinePen, current_right.P(), DeBoorAlgthm(lastT).P());
             }
+            */
 
             ///////////////////////////////////////////////////////////////////////////////
             // Drawing code end                                                          //
@@ -850,6 +979,32 @@ namespace mat_300_framework
         private Point2D lerp(Point2D P0, Point2D P1, float t)
         {
             return new Point2D((1.0f - t) * P0 + t * P1);
+        }
+
+        private float lerp(float lhs, float rhs, float t)
+        {
+            return (1.0f - t) * lhs + t * rhs;
+        }
+
+        private float DeCastlejauP(float t)
+        {
+            float tcomplement = 1.0f - t;
+
+            List<Point2D> oldpoints, newpoints;
+            oldpoints = new List<Point2D>(pts_);
+            newpoints = new List<Point2D>();
+            
+            while (oldpoints.Count > 1)
+            {
+                newpoints.Clear();
+                for (int i = 0; i + 1 < oldpoints.Count; ++i)
+                {
+                    newpoints.Add( new Point2D(t, lerp(oldpoints[i].y, oldpoints[i + 1].y, t)) );
+                }
+                oldpoints = new List<Point2D>(newpoints);
+            }
+
+            return oldpoints[0].y;
         }
 
         private Point2D DeCastlejau(float t)
@@ -898,6 +1053,20 @@ namespace mat_300_framework
             }
         }
 
+        private float BernsteinP(float t)
+        {
+            float tcomplement = 1.0f - t;
+            float Result = 0;
+            float binomialcoefficient;
+
+            for(int i = 0; i < pts_.Count; ++i)
+            {
+                binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, i);
+                Result += (float)(pts_[i].y * binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - (1 + i)) * System.Math.Pow(t, i));
+            }
+            return Result;
+        }
+        
         private Point2D Bernstein(float t)
         {
             float tcomplement = 1.0f - t;
