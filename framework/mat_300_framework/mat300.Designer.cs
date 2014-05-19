@@ -37,8 +37,13 @@ namespace mat_300_framework
             this.Menu_Points = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Shell = new System.Windows.Forms.ToolStripMenuItem();
             this.methodToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_DeCast = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_Bern = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment1_DeCastlejau = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment1_Bernstein = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment2_DeCastlejau = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment2_Bernstein = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment2_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Inter = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Inter_Poly = new System.Windows.Forms.ToolStripMenuItem();
@@ -132,32 +137,65 @@ namespace mat_300_framework
             // methodToolStripMenuItem
             // 
             this.methodToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Menu_DeCast,
-            this.Menu_Bern});
+            this.Menu_Assignment1}); //,
+            //this.Menu_Assignment2});
             this.methodToolStripMenuItem.Name = "methodToolStripMenuItem";
             this.methodToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
             this.methodToolStripMenuItem.Text = "&Method";
             // 
-            // Menu_DeCast
+            // Menu_Assignment1
             // 
-            this.Menu_DeCast.Name = "Menu_DeCast";
-            this.Menu_DeCast.Size = new System.Drawing.Size(175, 24);
-            this.Menu_DeCast.Text = "&DeCastlejau";
-            this.Menu_DeCast.Click += new System.EventHandler(this.Menu_DeCast_Click);
+            this.Menu_Assignment1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Menu_Assignment1_DeCastlejau,
+            this.Menu_Assignment1_Bernstein});
+            this.Menu_Assignment1.Name = "Menu_Assignment1";
+            this.Menu_Assignment1.Size = new System.Drawing.Size(175, 24);
+            this.Menu_Assignment1.Text = "Assignment1";
             // 
-            // Menu_Bern
+            // Menu_Assignment1_DeCastlejau
             // 
-            this.Menu_Bern.Name = "Menu_Bern";
-            this.Menu_Bern.Size = new System.Drawing.Size(175, 24);
-            this.Menu_Bern.Text = "&Bernstein";
-            this.Menu_Bern.Click += new System.EventHandler(this.Menu_Bern_Click);
+            this.Menu_Assignment1_DeCastlejau.Name = "Menu_Assignment1_DeCastlejau";
+            this.Menu_Assignment1_DeCastlejau.Size = new System.Drawing.Size(157, 24);
+            this.Menu_Assignment1_DeCastlejau.Text = "DeCastlejau";
+            this.Menu_Assignment1_DeCastlejau.Click += new System.EventHandler(this.Menu_Assignment1_DeCastlejau_Click);
             // 
-            // Menu_Midpoint
+            // Menu_Assignment1_Bernstein
             // 
-            this.Menu_Midpoint.Name = "Menu_Midpoint";
-            this.Menu_Midpoint.Size = new System.Drawing.Size(157, 24);
-            this.Menu_Midpoint.Text = "&Midpoint";
-            this.Menu_Midpoint.Click += new System.EventHandler(this.Menu_Midpoint_Click);
+            this.Menu_Assignment1_Bernstein.Name = "Menu_Assignment1_Bernstein";
+            this.Menu_Assignment1_Bernstein.Size = new System.Drawing.Size(157, 24);
+            this.Menu_Assignment1_Bernstein.Text = "Bernstein";
+            this.Menu_Assignment1_Bernstein.Click += new System.EventHandler(this.Menu_Assignment1_Bernstein_Click);
+            // 
+            // Menu_Assignment2
+            // 
+            this.Menu_Assignment2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Menu_Assignment2_DeCastlejau,
+            this.Menu_Assignment2_Bernstein,
+            this.Menu_Assignment2_Midpoint});
+            this.Menu_Assignment2.Name = "Menu_Assignment2";
+            this.Menu_Assignment2.Size = new System.Drawing.Size(175, 24);
+            this.Menu_Assignment2.Text = "Assignment2";
+            // 
+            // Menu_Assignment2_DeCastlejau
+            // 
+            this.Menu_Assignment2_DeCastlejau.Name = "Menu_Assignment2_DeCastlejau";
+            this.Menu_Assignment2_DeCastlejau.Size = new System.Drawing.Size(219, 24);
+            this.Menu_Assignment2_DeCastlejau.Text = "DeCastlejau";
+            this.Menu_Assignment2_DeCastlejau.Click += new System.EventHandler(this.Menu_Assignment2_DeCastlejau_Click);
+            // 
+            // Menu_Assignment2_Bernstein
+            // 
+            this.Menu_Assignment2_Bernstein.Name = "Menu_Assignment2_Bernstein";
+            this.Menu_Assignment2_Bernstein.Size = new System.Drawing.Size(219, 24);
+            this.Menu_Assignment2_Bernstein.Text = "Bernstein";
+            this.Menu_Assignment2_Bernstein.Click += new System.EventHandler(this.Menu_Assignment2_Bernstein_Click);
+            // 
+            // Menu_Assignment2_Midpoint
+            // 
+            this.Menu_Assignment2_Midpoint.Name = "Menu_Assignment2_Midpoint";
+            this.Menu_Assignment2_Midpoint.Size = new System.Drawing.Size(219, 24);
+            this.Menu_Assignment2_Midpoint.Text = "Midpoint Subdivision";
+            this.Menu_Assignment2_Midpoint.Click += new System.EventHandler(this.Menu_Assignment2_Midpoint_Click);
             // 
             // Menu_Inter
             // 
@@ -173,21 +211,18 @@ namespace mat_300_framework
             this.Menu_Inter_Poly.Name = "Menu_Inter_Poly";
             this.Menu_Inter_Poly.Size = new System.Drawing.Size(152, 24);
             this.Menu_Inter_Poly.Text = "&Polynomial";
-            this.Menu_Inter_Poly.Click += new System.EventHandler(this.Menu_Inter_Poly_Click);
             // 
             // Menu_Inter_Splines
             // 
             this.Menu_Inter_Splines.Name = "Menu_Inter_Splines";
             this.Menu_Inter_Splines.Size = new System.Drawing.Size(152, 24);
             this.Menu_Inter_Splines.Text = "&Splines";
-            this.Menu_Inter_Splines.Click += new System.EventHandler(this.Menu_Inter_Splines_Click);
             // 
             // Menu_DeBoor
             // 
             this.Menu_DeBoor.Name = "Menu_DeBoor";
             this.Menu_DeBoor.Size = new System.Drawing.Size(157, 24);
             this.Menu_DeBoor.Text = "DeBoo&r";
-            this.Menu_DeBoor.Click += new System.EventHandler(this.Menu_DeBoor_Click);
             // 
             // Txt_knot
             // 
@@ -296,9 +331,6 @@ namespace mat_300_framework
         private System.Windows.Forms.ToolStripMenuItem Menu_Points;
         private System.Windows.Forms.ToolStripMenuItem methodToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem Menu_Shell;
-        private System.Windows.Forms.ToolStripMenuItem Menu_Assign0;
-        private System.Windows.Forms.ToolStripMenuItem Menu_DeCast;
-        private System.Windows.Forms.ToolStripMenuItem Menu_Bern;
         private System.Windows.Forms.ToolStripMenuItem Menu_Midpoint;
         private System.Windows.Forms.ToolStripMenuItem Menu_Clear;
         private System.Windows.Forms.ToolStripMenuItem Menu_Inter;
@@ -310,6 +342,13 @@ namespace mat_300_framework
         private System.Windows.Forms.Label Lbl_knot;
         private System.Windows.Forms.NumericUpDown NUD;
         private System.Windows.Forms.CheckBox CB_cont;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment1;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment1_DeCastlejau;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment1_Bernstein;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2_DeCastlejau;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2_Bernstein;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2_Midpoint;
     }
 }
 

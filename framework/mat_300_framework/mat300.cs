@@ -10,20 +10,31 @@ namespace mat_300_framework
 {
     public partial class MAT300 : Form
     {
+        enum Method
+        {
+            None,
+            DeCastlejau,
+            Bernstein,
+            MidpointSubdivision,
+            DeBoor
+        }
+
         public MAT300()
         {
             InitializeComponent();
 
+            assignment_ = 0;
+            method_ = Method.None;
             WindowSize_ = this.ClientSize;
+            
             pts_ = new List<Point2D>();
             tVal_ = 0.5F;
             degree_ = 1;
             knot_ = new List<float>();
             EdPtCont_ = true;
             rnd_ = new Random();
+            ProjectedMouse_ = new Point2D(0, 0);
         }
-
-        static Size WindowSize_;
 
         // Point class for general math use
         protected class Point2D : System.Object
@@ -106,14 +117,21 @@ namespace mat_300_framework
             }
         };
 
-        List<Point2D> pts_; // the list of points used in internal algthms
+        int assignment_;
+        Method method_;
         Point2D MouseInWorld_;
+        Point2D ProjectedMouse_;
+        static Size WindowSize_;
+
+        List<Point2D> pts_; // the list of points used in internal algthms
         float tVal_; // t-value used for shell drawing
         int degree_; // degree of deboor subsplines
-        //int iterations_; //iterations for midpoint subdivision
+        int iterations_; //iterations for midpoint subdivision
         List<float> knot_; // knot sequence for deboor
         bool EdPtCont_; // end point continuity flag for std knot seq contruction
         Random rnd_; // random number generator
+        
+
 
         // pickpt returns an index of the closest point to the passed in point
         //  -- usually a mouse position
@@ -138,6 +156,9 @@ namespace mat_300_framework
         private void Menu_Clear_Click(object sender, EventArgs e)
         {
             pts_.Clear();
+            assignment_ = 0;
+            method_ = Method.None;
+
             Refresh();
         }
 
@@ -152,65 +173,88 @@ namespace mat_300_framework
             WindowSize_ = this.ClientSize;
         }
 
+        private void SetMousePosition(Point2D newpos)
+        {
+            MouseInWorld_ = new Point2D(newpos);
+            /*
+            ProjectedMouse_ = new Point2D(newpos);
+
+            if (pts_.Count > 0 && assignment_ == 1)
+            {
+                if (method_ == Method.DeCastlejau)
+                {
+                    ProjectedMouse_ = DeCastlejau(MouseInWorld_.x);
+                }
+                else if (method_ == Method.Bernstein)
+                {
+                    ProjectedMouse_ = Bernstein(MouseInWorld_.x);
+                }
+
+                Refresh();
+            }
+            */
+        }
+
         private void MAT300_MouseMove(object sender, MouseEventArgs e)
         {
-            MouseInWorld_ = new Point2D(e.X, e.Y).ToWorldSpace();
-
+            SetMousePosition(new Point2D(e.X, e.Y).ToWorldSpace());
+            
             // if the right mouse button is being pressed
             if (pts_.Count != 0 && e.Button == MouseButtons.Right)
             {
                 // grab the closest point and snap it to the mouse
                 int index = PickPt(MouseInWorld_);
 
-                //if (!Menu_Assign0.Checked)
-                //{
-                //    pts_[index].x = e.X;
-                //    pts_[index].y = e.Y;
-                //}
-                //else
-                //{
-                    pts_[index].y = -8 * ((float)e.Y/(float)WindowSize_.Height) + 4.0f;
-                //}
+                if (assignment_ == 1)
+                {
+                    pts_[index].y = MouseInWorld_.y;
+                }
+                else
+                {
+                    pts_[index] = MouseInWorld_;
+                }
+                Refresh();
             }
-
-            Refresh();
         }
 
         private void MAT300_MouseDown(object sender, MouseEventArgs e)
         {
-            /*
-            // if the left mouse button was clicked
-            if (e.Button == MouseButtons.Left && !Menu_Assign0.Checked)
-            {
-                // add a new point to the controlPoints
-                pts_.Add(new Point2D( e.X, e.Y));
+            SetMousePosition(new Point2D(e.X, e.Y).ToWorldSpace());
 
-                if (Menu_DeBoor.Checked)
+            if(assignment_ != 1)
+            {
+                // if the left mouse button was clicked
+                if (e.Button == MouseButtons.Left)
                 {
-                    ResetKnotSeq();
-                    UpdateKnotSeq();
+                    // add a new point to the controlPoints
+                    pts_.Add(MouseInWorld_);
+
+                    if (Menu_DeBoor.Checked)
+                    {
+                        ResetKnotSeq();
+                        UpdateKnotSeq();
+                    }
+
+                    Refresh();
                 }
 
-                Refresh();
-            }
-
-            // if there are points and the middle mouse button was pressed
-            if (pts_.Count != 0 && e.Button == MouseButtons.Middle && !Menu_Assign0.Checked)
-            {
-                // then delete the closest point
-                int index = PickPt(new Point2D(e.X, e.Y).ToWorldSpace());
-
-                pts_.RemoveAt(index);
-
-                if (Menu_DeBoor.Checked)
+                // if there are points and the middle mouse button was pressed
+                if (pts_.Count != 0 && e.Button == MouseButtons.Middle && assignment_ != 1)
                 {
-                    ResetKnotSeq();
-                    UpdateKnotSeq();
-                }
+                    // then delete the closest point
+                    int index = PickPt( MouseInWorld_ );
 
-                Refresh();
+                    pts_.RemoveAt(index);
+
+                    if (Menu_DeBoor.Checked)
+                    {
+                        ResetKnotSeq();
+                        UpdateKnotSeq();
+                    }
+
+                    Refresh();
+                }
             }
-            */
         }
 
         private void MAT300_MouseWheel(object sender, MouseEventArgs e)
@@ -234,33 +278,36 @@ namespace mat_300_framework
             if (pts_.Count == 0)
                 return;
 
-            if (Menu_DeCast.Checked || Menu_Bern.Checked)
-            //if (Menu_Assign0.Checked)
+            switch(assignment_)
             {
-                degree_ = (int)NUD.Value;
+                case 1:
+                    degree_ = (int)NUD.Value;
 
-                NUD.Value = degree_;
+                    NUD.Value = degree_;
 
-                pts_.Clear();
+                    pts_.Clear();
 
-                //Create Coefficient Points
-                for (int i = 0; i < degree_ + 1; ++i)
-                {
-                    pts_.Add(new Point2D(((float)i / (float)degree_), 1.0f));
-                }
+                    //Create Coefficient Points
+                    for (int i = 0; i < degree_ + 1; ++i)
+                    {
+                        pts_.Add(new Point2D(((float)i / (float)degree_), 1.0f));
+                    }
+                    break;
+
+                case 2:
+                    if(method_ != Method.MidpointSubdivision)
+                    {
+                        tVal_ = (float)NUD.Value;
+                        NUD.Value = (decimal)tVal_;
+                    }
+                    else
+                    {
+                        iterations_ = (int)NUD.Value;
+                        NUD.Value = iterations_;
+                    }
+                    break;
             }
             /*
-            else if( Menu_DeCast.Checked || Menu_Bern.Checked )
-            {
-                tVal_ = (float)NUD.Value;
-                NUD.Value = (decimal)tVal_;
-            }
-            else if(Menu_Midpoint.Checked)
-            {
-                iterations_ = (int)NUD.Value;
-
-                NUD.Value = iterations_;
-            }
             else if (Menu_DeBoor.Checked)
             {
                 degree_ = (int)NUD.Value;
@@ -325,47 +372,25 @@ namespace mat_300_framework
             Refresh();
         }
 
-        private void Menu_Assign0_Click(object sender, EventArgs e)
+        private void UpdateMethod(int newassignment, Method newmethod)
         {
-            Menu_Assign0.Checked = !Menu_Assign0.Checked;
-
-            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
-
-            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
-
-            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
-
-            ToggleDeBoorHUD(false);
-
-            pts_.Clear();
-
-            if(Menu_Assign0.Checked)
+            if(assignment_ == newassignment && method_ == newmethod)
             {
-                //Create Coefficient Points
-                for (int i = 0; i < degree_ + 1; ++i)
+                assignment_ = 0;
+                method_ = Method.None;
+            }
+            else
+            {
+                if(assignment_ == 1 || newassignment == 1)
                 {
-                    pts_.Add(new Point2D(( (float)i/(float)degree_), 1.0f));
+                    pts_.Clear();
                 }
+
+                assignment_ = newassignment;
+                method_ = newmethod;
             }
 
-            Refresh();
-        }
-
-        private void Menu_DeCast_Click(object sender, EventArgs e)
-        {
-            Menu_DeCast.Checked = !Menu_DeCast.Checked;
-            Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
-
-            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
-
-            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
-
-            ToggleDeBoorHUD(false);
-
-            //Remove after first assignment. 
-            pts_.Clear();
-
-            if(Menu_DeCast.Checked)
+            if(assignment_ == 1)
             {
                 //Create Coefficient Points
                 for (int i = 0; i < degree_ + 1; ++i)
@@ -374,52 +399,67 @@ namespace mat_300_framework
                 }
             }
 
+            ToggleDeBoorHUD(method_ == Method.DeBoor);
+
             Refresh();
         }
 
-        private void Menu_Bern_Click(object sender, EventArgs e)
+        private void Menu_Assignment1_DeCastlejau_Click(object sender, EventArgs e)
         {
-            Menu_Bern.Checked = !Menu_Bern.Checked;
-            Menu_DeCast.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
-
-            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
-
+            Menu_Assignment1_DeCastlejau.Checked = !Menu_Assignment1_DeCastlejau.Checked;
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
-            ToggleDeBoorHUD(false);
-
-            //Remove after first assignment. 
-            pts_.Clear();
-
-            if (Menu_Bern.Checked)
-            {
-                //Create Coefficient Points
-                for (int i = 0; i < degree_ + 1; ++i)
-                {
-                    pts_.Add(new Point2D(((float)i / (float)degree_), 1.0f));
-                }
-            }
-
-            Refresh();
+            Menu_Assignment1_Bernstein.Checked = false;
+            Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
+            UpdateMethod(1, Method.DeCastlejau);
         }
 
-        private void Menu_Midpoint_Click(object sender, EventArgs e)
+        private void Menu_Assignment1_Bernstein_Click(object sender, EventArgs e)
         {
-            Menu_Midpoint.Checked = !Menu_Midpoint.Checked;
-            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_DeBoor.Checked = false;
-
-            Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
-
+            Menu_Assignment1_Bernstein.Checked = !Menu_Assignment1_Bernstein.Checked;
             Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
 
-            ToggleDeBoorHUD(false);
-
-            Refresh();
+            Menu_Assignment1_DeCastlejau.Checked = false;
+            Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
+            UpdateMethod(1, Method.Bernstein);
         }
 
+        private void Menu_Assignment2_DeCastlejau_Click(object sender, EventArgs e)
+        {
+            Menu_Assignment2_DeCastlejau.Checked = !Menu_Assignment2_DeCastlejau.Checked;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
+
+            Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
+            Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
+            UpdateMethod(2, Method.DeCastlejau);
+        }
+
+        private void Menu_Assignment2_Bernstein_Click(object sender, EventArgs e)
+        {
+            Menu_Assignment2_Bernstein.Checked = !Menu_Assignment2_Bernstein.Checked;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
+
+            Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
+            Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Midpoint.Checked = false;
+
+            UpdateMethod(2, Method.Bernstein);
+        }
+
+        private void Menu_Assignment2_Midpoint_Click(object sender, EventArgs e)
+        {
+            Menu_Assignment2_Midpoint.Checked = !Menu_Assignment2_Midpoint.Checked;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
+
+            Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
+            Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = false;
+
+            UpdateMethod(2, Method.MidpointSubdivision);
+        }
+
+        /*
         private void Menu_Inter_Poly_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
+            Menu_Assignment2.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
 
             Menu_Inter_Poly.Checked = !Menu_Inter_Poly.Checked;
             Menu_Inter_Splines.Checked = false;
@@ -435,7 +475,7 @@ namespace mat_300_framework
 
         private void Menu_Inter_Splines_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
+            Menu_Assignment2.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = Menu_DeBoor.Checked = false;
 
             Menu_Inter_Poly.Checked = false;
             Menu_Inter_Splines.Checked = !Menu_Inter_Splines.Checked;
@@ -450,7 +490,7 @@ namespace mat_300_framework
 
         private void Menu_DeBoor_Click(object sender, EventArgs e)
         {
-            Menu_DeCast.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = false;
+            Menu_Assignment2.Checked = Menu_Bern.Checked = Menu_Midpoint.Checked = false;
 
             Menu_Inter_Poly.Checked = Menu_Inter_Splines.Checked = false;
 
@@ -462,6 +502,7 @@ namespace mat_300_framework
 
             Refresh();
         }
+        */
 
         private void DegreeClamp()
         {
@@ -502,53 +543,62 @@ namespace mat_300_framework
 
         private void SetNUD()
         {
-            if(Menu_DeCast.Checked || Menu_Bern.Checked)
-            //if(Menu_Assign0.Checked)
+            switch(assignment_)
             {
-                NUD_label.Text = "&Degree";
-                NUD_label.TabIndex = 3;
+                case 1:
+                    NUD_label.Text = "&Degree";
+                    NUD_label.TabIndex = 3;
 
-                NUD.TabIndex = 5;
-                NUD.DecimalPlaces = 0;
-                NUD.Increment = (decimal)1;
-                NUD.Minimum = (decimal)1;
-                NUD.Maximum = (decimal)20;
-                NUD.Value = (decimal)degree_;
+                    NUD.TabIndex = 5;
+                    NUD.DecimalPlaces = 0;
+                    NUD.Increment = (decimal)1;
+                    NUD.Minimum = (decimal)1;
+                    NUD.Maximum = (decimal)20;
+                    NUD.Value = (decimal)degree_;
 
-                NUD_label.Visible = true;
-                NUD.Visible = true;
+                    NUD_label.Visible = true;
+                    NUD.Visible = true;
+                    break;
+
+                case 2:
+                    if(method_ != Method.MidpointSubdivision)
+                    {
+                        NUD_label.Text = "&T-Value";
+                        NUD_label.TabIndex = 3;
+
+                        NUD.TabIndex = 5;
+                        NUD.DecimalPlaces = 2;
+                        NUD.Increment = (decimal)0.01f;
+                        NUD.Minimum = (decimal)0;
+                        NUD.Maximum = (decimal)1;
+                        NUD.Value = (decimal)tVal_;
+
+                        NUD_label.Visible = true;
+                        NUD.Visible = true;
+                    }
+                    else
+                    {
+                        NUD_label.Text = "&Iterations";
+                        NUD_label.TabIndex = 3;
+
+                        NUD.TabIndex = 5;
+                        NUD.DecimalPlaces = 0;
+                        NUD.Increment = (decimal)1;
+                        NUD.Minimum = (decimal)1;
+                        NUD.Maximum = (decimal)6;
+                        NUD.Value = (decimal)4;
+            
+                        NUD_label.Visible = true;
+                        NUD.Visible = true;
+                    }
+                    break;
+
+                default:
+                    NUD_label.Visible = false;
+                    NUD.Visible = false;
+                    break;
             }
             /*
-            else if(Menu_DeCast.Checked || Menu_Bern.Checked)
-            {
-                NUD_label.Text = "&T-Value";
-                NUD_label.TabIndex = 3;
-
-                NUD.TabIndex = 5;
-                NUD.DecimalPlaces = 2;
-                NUD.Increment = (decimal)0.01f;
-                NUD.Minimum = (decimal)0;
-                NUD.Maximum = (decimal)1;
-                NUD.Value = (decimal)tVal_;
-
-                NUD_label.Visible = true;
-                NUD.Visible = true;
-            }
-            else if(Menu_Midpoint.Checked)
-            {
-                NUD_label.Text = "&Iterations";
-                NUD_label.TabIndex = 3;
-
-                NUD.TabIndex = 5;
-                NUD.DecimalPlaces = 0;
-                NUD.Increment = (decimal)1;
-                NUD.Minimum = (decimal)1;
-                NUD.Maximum = (decimal)6;
-                NUD.Value = (decimal)4;
-            
-                NUD_label.Visible = true;
-                NUD.Visible = true;
-            }
             else if(Menu_DeBoor.Checked)
             {
                 NUD_label.Text = "&Degree";
@@ -565,11 +615,6 @@ namespace mat_300_framework
                 NUD.Visible = true;
             }
             */
-            else
-            {
-                NUD_label.Visible = false;
-                NUD.Visible = false;
-            }
         }
 
         private void ToggleDeBoorHUD( bool on )
@@ -648,90 +693,55 @@ namespace mat_300_framework
             widthoffset = 10;
             heightoffset = 30;
 
-            //if (Menu_Assign0.Checked)
-            //{
-            //    gfx.DrawString("Assignment 0", arial, Brushes.Black, widthoffset, heightoffset);
-            //}
-            //else if (Menu_DeCast.Checked)
-            //{
-            //    gfx.DrawString("DeCasteljau", arial, Brushes.Black, widthoffset, heightoffset);
-            //}
-            //else if (Menu_Midpoint.Checked)
-            //{
-            //    gfx.DrawString("Midpoint", arial, Brushes.Black, widthoffset, heightoffset);
-            //}
-            //else if (Menu_Bern.Checked)
-            //{
-            //    gfx.DrawString("Bernstein", arial, Brushes.Black, widthoffset, heightoffset);
-            //}
-            //else if (Menu_DeBoor.Checked)
-            //{
-            //    gfx.DrawString("DeBoor", arial, Brushes.Black, widthoffset, heightoffset);
-            //}
-            //else
-            //{
-            //    somethingselected = false;
-            //}
+            gfx.DrawString("Assignment " + assignment_.ToString() + ": " + method_.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
 
-            //if(somethingselected)
-            //{
-            //    widthoffset = 150;
-            //}
+            heightoffset += arial.Height;
 
-            //widthoffset = 10;
-            //heightoffset += arial.Height;
-
-            if( !(pts_.Count < 2) && (Menu_DeCast.Checked || Menu_Bern.Checked) )
-            //if (Menu_Assign0.Checked)
+            /*
+            if (assignment_ == 1)
             {
-                Point2D temp = new Point2D(MouseInWorld_);
-                if(Menu_DeCast.Checked)
-                {
-                    temp.y = DeCastlejauP(temp.x);
-                }
-                else if (Menu_Bern.Checked)
-                {
-                    temp.y = BernsteinP(temp.x);
-                }
-
-                gfx.DrawString("Mouse(" + temp.x.ToString() + ", " + temp.y.ToString() + ") ", arial, Brushes.Black, widthoffset, heightoffset);
-                gfx.DrawEllipse(splinePen, temp.P().X - 2.0f, temp.P().Y - 2.0f, 4.0f, 4.0f);
-
+                //Draws the mouse projected onto our curve
+                gfx.DrawString("Mouse(" + ProjectedMouse_.x.ToString() + ", " + ProjectedMouse_.y.ToString() + ") ", arial, Brushes.Black, widthoffset, heightoffset);
+                gfx.DrawEllipse(splinePen, ProjectedMouse_.P().X - 2.0f, ProjectedMouse_.P().Y - 2.0f, 4.0f, 4.0f);
                 heightoffset += arial.Height;
+            }
+            */
+            
+            if(assignment_ == 1)
+            {
                 gfx.DrawString("Coefficients :" + pts_.Count.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
             }
+            else
+            {
+                gfx.DrawString("points: " + pts_.Count.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
             
-            //else
-            //{
-            //    gfx.DrawString("points: " + pts_.Count.ToString(), arial, Brushes.Black, widthoffset, heightoffset);
-            
-            //    if (pts_.Count > 0)
-            //    {
-            //        widthoffset += 100;
-            //        gfx.DrawString("t-value: " + tVal_.ToString("F"), arial, Brushes.Black, widthoffset, heightoffset);
+                if (pts_.Count > 0)
+                {
+                    widthoffset += 100;
+                    gfx.DrawString("t-value: " + tVal_.ToString("F"), arial, Brushes.Black, widthoffset, heightoffset);
 
-            //        widthoffset += 150;
-            //        gfx.DrawString("t-step: " + alpha.ToString("F6"), arial, Brushes.Black, widthoffset, heightoffset);
-            //    }
-            //}
+                    widthoffset += 150;
+                    gfx.DrawString("t-step: " + alpha.ToString("F6"), arial, Brushes.Black, widthoffset, heightoffset);
+                }
+            }
 
             widthoffset = 10;
             heightoffset += arial.Height;
 
-            //if (Menu_Assign0.Checked)
-            //{
-            for (int i = 0; i < pts_.Count; ++i)
+            if (assignment_ == 1)
             {
-                gfx.DrawString("A" + i.ToString() + ": " + pts_[i].y.ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
+                for (int i = 0; i < pts_.Count; ++i)
+                {
+                    gfx.DrawString("A" + i.ToString() + ": " + pts_[i].y.ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
+                }
             }
-            //}
-            //else
-            //{
-            //    for (int i = 0; i < pts_.Count; ++i)
-            //    {
-            //        gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
-            //    }
-            //}
+            else
+            {
+                for (int i = 0; i < pts_.Count; ++i)
+                {
+                    gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
+                }
+            }
 
             //END of HUD drawing
 
@@ -740,8 +750,7 @@ namespace mat_300_framework
             // Polynomials                                                               //
             ///////////////////////////////////////////////////////////////////////////////
 
-            //DeCastlejau Polynomial
-            if (Menu_DeCast.Checked)
+            if (assignment_ == 1)
             {
                 //Draw Axes
                 Point2D Origin = new Point2D(0.0f, 0.0f);
@@ -773,118 +782,63 @@ namespace mat_300_framework
                 Tick2.y = 0.01f * (YPos.y - YNeg.y);
 
                 gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
-
-                //Draw Polynomial
-                Point2D current_left;
-                Point2D current_right = new Point2D(0.0f, DeCastlejauP(0));
-
-                for (float t = alpha; t < 1; t += alpha)
-                {
-                    current_left = current_right;
-                    current_right = new Point2D(t, DeCastlejauP(t));
-                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
-                }
-
-                current_left = current_right;
-                current_right = new Point2D(1.0f, DeCastlejauP(1.0f));
-
-                gfx.DrawLine(splinePen, current_left.P(), current_right.P());
             }
-
-            ////Bernstein Polynomial
-            if (Menu_Bern.Checked)
+            else if(pts_.Count == 0)
             {
+                return;
+            }
 
-                //Draw Axes
-                Point2D Origin = new Point2D(0.0f, 0.0f);
-                Point2D XPos = new Point2D(1.0f, 0.0f);
-                Point2D YPos = new Point2D(0.0f, 4.0f);
-                Point2D YNeg = new Point2D(0.0f, -4.0f);
-
-
-                gfx.DrawLine(polyPen, YNeg.P(), YPos.P());
-                gfx.DrawLine(polyPen, Origin.P(), XPos.P());
-
-                Point2D Tick1 = new Point2D(YPos);
-                Point2D Tick2 = new Point2D(YPos);
-
-
-                Tick1.x = -0.01f * (XPos.x - Origin.x);
-                Tick2.x = 0.01f * (XPos.x - Origin.x);
-
-                //Draw Tick Marks
-                while (Tick1.y > YNeg.y)
-                {
-                    Tick2.y = Tick1.y;
-                    gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
-                    Tick1.y -= 1.0f;
-                }
-
-                Tick1.x = Tick2.x = XPos.x;
-                Tick1.y = -0.01f * (YPos.y - YNeg.y);
-                Tick2.y = 0.01f * (YPos.y - YNeg.y);
-
-                gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
-
+            if(method_ == Method.MidpointSubdivision)
+            {
+                DrawMidpoint(gfx, polyPen, pts_, iterations_);
+            }
+            else
+            {
                 //Draw Polynomial
-                Point2D current_left;
-                Point2D current_right = new Point2D(0.0f, BernsteinP(0));
+                Point2D current_left, current_right;
+                if (method_ == Method.DeCastlejau)
+                {
+                    current_right = DeCastlejau(0);
+                }
+                else
+                {
+                    current_right = Bernstein(0);
+                }
 
                 for (float t = alpha; t < 1; t += alpha)
                 {
                     current_left = current_right;
-                    current_right = new Point2D(t, BernsteinP(t));
+
+                    if (method_ == Method.DeCastlejau)
+                    {
+                        current_right = DeCastlejau(t);
+                    }
+                    else
+                    {
+                        current_right = Bernstein(t);
+                    }
+
                     gfx.DrawLine(splinePen, current_left.P(), current_right.P());
                 }
 
                 current_left = current_right;
-                current_right = new Point2D(1.0f, BernsteinP(1.0f));
+                if (method_ == Method.DeCastlejau)
+                {
+                    current_right = DeCastlejau(1);
+                }
+                else
+                {
+                    current_right = Bernstein(1);
+                }
 
                 gfx.DrawLine(splinePen, current_left.P(), current_right.P());
             }
-
+            
             ///////////////////////////////////////////////////////////////////////////////
             // Bezier Curves                                                             //
             ///////////////////////////////////////////////////////////////////////////////
+
             /*
-            // DeCastlejau algorithm for Bezier Curves
-            if (Menu_DeCast.Checked)
-            {
-                Point2D current_left;
-                Point2D current_right = new Point2D(DeCastlejau(0));
-
-                for (float t = alpha; t < 1; t += alpha)
-                {
-                    current_left = current_right;
-                    current_right = DeCastlejau(t);
-                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
-                }
-
-                gfx.DrawLine(splinePen, current_right.P(), DeCastlejau(1).P());
-            }
-
-            // Bernstein polynomial
-            if (Menu_Bern.Checked)
-            {
-                Point2D current_left;
-                Point2D current_right = new Point2D(Bernstein(0));
-
-                for (float t = alpha; t < 1; t += alpha)
-                {
-                    current_left = current_right;
-                    current_right = Bernstein(t);
-                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
-                }
-
-                gfx.DrawLine(splinePen, current_right.P(), Bernstein(1).P());
-            }
-
-            // Midpoint algorithm
-            if (Menu_Midpoint.Checked)
-            {
-                DrawMidpoint(gfx, splinePen, pts_, iterations_);
-            }
-
             // polygon interpolation
             if (Menu_Inter_Poly.Checked)
             {
@@ -986,6 +940,7 @@ namespace mat_300_framework
             return (1.0f - t) * lhs + t * rhs;
         }
 
+        /*
         private float DeCastlejauP(float t)
         {
             float tcomplement = 1.0f - t;
@@ -1006,16 +961,32 @@ namespace mat_300_framework
 
             return oldpoints[0].y;
         }
+         * 
+        private float BernsteinP(float t)
+        {
+            float tcomplement = 1.0f - t;
+            float Result = 0;
+            float binomialcoefficient;
+
+            for(int i = 0; i < pts_.Count; ++i)
+            {
+                binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, i);
+                Result += (float)(pts_[i].y * binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - (1 + i)) * System.Math.Pow(t, i));
+            }
+            return Result;
+        }
+        */
 
         private Point2D DeCastlejau(float t)
         {
+            Point2D Result;
             if(t == 0.0f)
             {
-                return pts_[0];
+                Result = new Point2D(pts_[0]);
             }
             else if(t == 1.0f)
             {
-                return pts_[pts_.Count - 1];
+                Result = new Point2D(pts_[pts_.Count - 1]);
             }
             else
             {
@@ -1035,8 +1006,15 @@ namespace mat_300_framework
                     oldpoints = new List<Point2D>(newpoints);
                 }
 
-                return oldpoints[0];
+                Result = new Point2D(oldpoints[0]);
             }
+
+            if(assignment_ == 1)
+            {
+                Result.x = t;
+            }
+
+            return Result;
         }
 
         private int GetPascalBinomialCoeff(int d, int i)
@@ -1053,32 +1031,25 @@ namespace mat_300_framework
             }
         }
 
-        private float BernsteinP(float t)
-        {
-            float tcomplement = 1.0f - t;
-            float Result = 0;
-            float binomialcoefficient;
-
-            for(int i = 0; i < pts_.Count; ++i)
-            {
-                binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, i);
-                Result += (float)(pts_[i].y * binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - (1 + i)) * System.Math.Pow(t, i));
-            }
-            return Result;
-        }
         
         private Point2D Bernstein(float t)
         {
             float tcomplement = 1.0f - t;
 
             int binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, 0);
-            Point2D Result = (float)(binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - 1) * System.Math.Pow(t, 0)) * pts_[0];
+            Point2D Result = new Point2D( (float)(binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - 1) * System.Math.Pow(t, 0)) * pts_[0]);
 
             for(int i = 1; i < pts_.Count; ++i)
             {
                 binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, i);
                 Result += (float)(binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - (1 + i)) * System.Math.Pow(t, i)) * pts_[i];
             }
+
+            if(assignment_ == 1)
+            {
+                Result.x = t;
+            }
+
             return Result;
         }
 
