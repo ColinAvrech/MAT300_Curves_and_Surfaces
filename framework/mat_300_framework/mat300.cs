@@ -26,6 +26,8 @@ namespace mat_300_framework
             assignment_ = 0;
             method_ = Method.None;
             WindowSize_ = this.ClientSize;
+            SelectedIndex_ = -1;
+            //ProjectedMouse_ = new Point2D(0, 0);
             
             pts_ = new List<Point2D>();
             tVal_ = 0.5F;
@@ -33,7 +35,20 @@ namespace mat_300_framework
             knot_ = new List<float>();
             EdPtCont_ = true;
             rnd_ = new Random();
-            ProjectedMouse_ = new Point2D(0, 0);
+
+            CachedPascalsTriangle_ = new List<List<int>>();
+
+            int index;
+            for(int row = 1; row < 20; ++row)
+            {
+                index = 0;
+                CachedPascalsTriangle_.Add(new List<int>());
+                while(index < row)
+                {
+                    CachedPascalsTriangle_[row - 1].Add( GetPascalBinomialCoeff(row, index) );
+                    ++index;
+                }
+            }
         }
 
         // Point class for general math use
@@ -120,8 +135,10 @@ namespace mat_300_framework
         int assignment_;
         Method method_;
         Point2D MouseInWorld_;
-        Point2D ProjectedMouse_;
+        int SelectedIndex_;
+        //Point2D ProjectedMouse_;
         static Size WindowSize_;
+        List<List<int>> CachedPascalsTriangle_;
 
         List<Point2D> pts_; // the list of points used in internal algthms
         float tVal_; // t-value used for shell drawing
@@ -202,18 +219,25 @@ namespace mat_300_framework
             // if the right mouse button is being pressed
             if (pts_.Count != 0 && e.Button == MouseButtons.Right)
             {
-                // grab the closest point and snap it to the mouse
-                int index = PickPt(MouseInWorld_);
+                if(SelectedIndex_ == -1)
+                {
+                    // grab the closest point and snap it to the mouse
+                    SelectedIndex_ = PickPt(MouseInWorld_);
+                }
 
                 if (assignment_ == 1)
                 {
-                    pts_[index].y = MouseInWorld_.y;
+                    pts_[SelectedIndex_].y = MouseInWorld_.y;
                 }
                 else
                 {
-                    pts_[index] = MouseInWorld_;
+                    pts_[SelectedIndex_] = MouseInWorld_;
                 }
                 Refresh();
+            }
+            else
+            {
+                SelectedIndex_ = -1;
             }
         }
 
@@ -1019,9 +1043,13 @@ namespace mat_300_framework
 
         private int GetPascalBinomialCoeff(int d, int i)
         {
-            System.Diagnostics.Debug.Assert(!(d < 0) && !(i > d));
+            System.Diagnostics.Debug.Assert(!(d - 1 < 0) && !(i > d));
 
-            if (i == 0 || i == d - 1)
+            if( !(CachedPascalsTriangle_.Count < d) && CachedPascalsTriangle_[d-1].Count > i)
+            {
+                return CachedPascalsTriangle_[d - 1][i];
+            }
+            else if (i == 0 || i == d - 1)
             {
                 return 1;
             }
