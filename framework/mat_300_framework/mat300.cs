@@ -729,7 +729,6 @@ namespace mat_300_framework
                 gfx.DrawEllipse(splinePen, ProjectedMouse_.P().X - 2.0f, ProjectedMouse_.P().Y - 2.0f, 4.0f, 4.0f);
                 heightoffset += arial.Height;
             }
-            */
             
             if(assignment_ == 1)
             {
@@ -766,9 +765,13 @@ namespace mat_300_framework
                     gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
                 }
             }
-
+            */
             //END of HUD drawing
-
+            
+            if (pts_.Count == 0)
+            {
+                return;
+            }
 
             ///////////////////////////////////////////////////////////////////////////////
             // Polynomials                                                               //
@@ -806,10 +809,6 @@ namespace mat_300_framework
                 Tick2.y = 0.01f * (YPos.y - YNeg.y);
 
                 gfx.DrawLine(polyPen, Tick1.P(), Tick2.P());
-            }
-            else if(pts_.Count == 0)
-            {
-                return;
             }
 
             if(method_ == Method.MidpointSubdivision)
