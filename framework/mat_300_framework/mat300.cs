@@ -225,7 +225,7 @@ namespace mat_300_framework
                     SelectedIndex_ = PickPt(MouseInWorld_);
                 }
 
-                if (assignment_ == 1)
+                if(assignment_ == 1)
                 {
                     pts_[SelectedIndex_].y = MouseInWorld_.y;
                 }
@@ -398,6 +398,11 @@ namespace mat_300_framework
 
         private void UpdateMethod(int newassignment, Method newmethod)
         {
+            if(assignment_ == 1 || newassignment == 1)
+            {
+                pts_.Clear();
+            }
+
             if(assignment_ == newassignment && method_ == newmethod)
             {
                 assignment_ = 0;
@@ -405,11 +410,6 @@ namespace mat_300_framework
             }
             else
             {
-                if(assignment_ == 1 || newassignment == 1)
-                {
-                    pts_.Clear();
-                }
-
                 assignment_ = newassignment;
                 method_ = newmethod;
             }
@@ -697,6 +697,11 @@ namespace mat_300_framework
                 {
                     gfx.DrawEllipse(polyPen, pts_[i].P().X - 2.0f, pts_[i].P().Y - 2.0f, 4.0f, 4.0f);
                 }
+            }
+
+            if(assignment_ == 0)
+            {
+                return;
             }
 
             ///////////////////////////////////////////////////////////////////////////////
