@@ -35,6 +35,7 @@ namespace mat_300_framework
             knot_ = new List<float>();
             EdPtCont_ = true;
             rnd_ = new Random();
+            iterations_ = 5;
 
             CachedPascalsTriangle_ = new List<List<int>>();
 
@@ -324,11 +325,11 @@ namespace mat_300_framework
                         tVal_ = (float)NUD.Value;
                         NUD.Value = (decimal)tVal_;
                     }
-                    else
-                    {
-                        iterations_ = (int)NUD.Value;
-                        NUD.Value = iterations_;
-                    }
+                    //else
+                    //{
+                    //    iterations_ = (int)NUD.Value;
+                    //    NUD.Value = iterations_;
+                    //}
                     break;
             }
             /*
@@ -585,7 +586,7 @@ namespace mat_300_framework
                     break;
 
                 case 2:
-                    if(method_ != Method.MidpointSubdivision)
+                    if(method_ == Method.DeCastlejau)
                     {
                         NUD_label.Text = "&T-Value";
                         NUD_label.TabIndex = 3;
@@ -600,6 +601,8 @@ namespace mat_300_framework
                         NUD_label.Visible = true;
                         NUD.Visible = true;
                     }
+                    //Used to debug Midpoint Subdivision
+                    /*
                     else
                     {
                         NUD_label.Text = "&Iterations";
@@ -615,6 +618,7 @@ namespace mat_300_framework
                         NUD_label.Visible = true;
                         NUD.Visible = true;
                     }
+                    */
                     break;
 
                 default:
@@ -671,8 +675,8 @@ namespace mat_300_framework
                 return;
 
             // pens used for drawing elements of the display
-            System.Drawing.Pen polyPen = new Pen(Color.Gray, 1.0f);
-            System.Drawing.Pen shellPen = new Pen(Color.LightGray, 0.5f);
+            System.Drawing.Pen polyPen = new Pen(Color.Blue, 1.0f);
+            System.Drawing.Pen shellPen = new Pen(Color.Red, 0.5f);
             System.Drawing.Pen splinePen = new Pen(Color.Black, 1.5f);
 
             if (Menu_Shell.Checked)
@@ -683,20 +687,12 @@ namespace mat_300_framework
 
             if (Menu_Polyline.Checked)
             {
-                // draw the control poly
-                for (int i = 1; i < pts_.Count; ++i)
-                {
-                    gfx.DrawLine(polyPen, pts_[i - 1].P(), pts_[i].P());
-                }
+                DrawPolyline(gfx, polyPen, pts_);
             }
 
             if (Menu_Points.Checked)
             {
-                // draw the control points
-                for(int i = 0; i < pts_.Count; ++i)
-                {
-                    gfx.DrawEllipse(polyPen, pts_[i].P().X - 2.0f, pts_[i].P().Y - 2.0f, 4.0f, 4.0f);
-                }
+                DrawPoints(gfx, polyPen, pts_);
             }
 
             if(assignment_ == 0)
@@ -818,7 +814,7 @@ namespace mat_300_framework
 
             if(method_ == Method.MidpointSubdivision)
             {
-                DrawMidpoint(gfx, polyPen, pts_, iterations_);
+                DrawMidpoint(gfx, splinePen, pts_, iterations_);
             }
             else
             {
@@ -923,33 +919,54 @@ namespace mat_300_framework
 
         }
 
+        private void DrawPoint(System.Drawing.Graphics gfx, System.Drawing.Pen pen, Point2D pt)
+        {
+            gfx.DrawEllipse(pen, pt.P().X - 2.0f, pt.P().Y - 2.0f, 4.0f, 4.0f);
+        }
+
+        private void DrawPoints(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> pts)
+        {
+            // draw the control points
+            for(int i = 0; i < pts_.Count; ++i)
+            {
+                DrawPoint(gfx, pen, pts[i]);
+            }
+        }
+
+        private void DrawPolyline(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> pts)
+        {
+            // draw the control poly
+            for (int i = 1; i < pts.Count; ++i)
+            {
+                gfx.DrawLine(pen, pts[i - 1].P(), pts[i].P());
+            }
+        }
+
         private void DrawShell(System.Drawing.Graphics gfx, System.Drawing.Pen pen, List<Point2D> pts, float t)
         {
-            if (pts.Count < 3)
-                return;
-
-            /*
-            Point2D temppt;
-            List<Point2D> points = new List<Point2D>(pts);
-            List<Point2D> shellpts = new List<Point2D>();
-
-            while(points.Count > 1)
+            if (pts.Count < 3 || t == 0.0f || t == 1.0f)
             {
-                for (int i = 0; i + 1 < points.Count; ++i)
-                {
-                    temppt = (1 - t) * points[i] + t * points[i + 1];
-                    gfx.DrawEllipse(pen, temppt.x - 2.0F, temppt.y - 2.0F, 4.0F, 4.0F);
-                    shellpts.Add(temppt);
-                }
-            
-                for (int i = 0; i + 1 < shellpts.Count; ++i)
-                {
-                    gfx.DrawLine(pen, shellpts[i].P(), shellpts[i + 1].P());
-                }
-
-                points = shellpts;
+                return;
             }
-            */
+            else
+            {
+                float tcomplement = 1.0f - t;
+
+                List<Point2D> oldpoints, newpoints;
+                oldpoints = new List<Point2D>(pts_);
+                newpoints = new List<Point2D>();
+
+                while(oldpoints.Count > 1)
+                {
+                    newpoints.Clear();
+                    for(int i = 0; i + 1 < oldpoints.Count; ++i)
+                    {
+                        newpoints.Add( lerp(oldpoints[i], oldpoints[i + 1], t) );
+                    }
+                    DrawPolyline(gfx, pen, newpoints);
+                    oldpoints = new List<Point2D>(newpoints);
+                }
+            }
         }
 
         private Point2D Gamma(int start, int end, float t)

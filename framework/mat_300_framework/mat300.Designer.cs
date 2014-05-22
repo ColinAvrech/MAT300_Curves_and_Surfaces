@@ -137,8 +137,8 @@ namespace mat_300_framework
             // methodToolStripMenuItem
             // 
             this.methodToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Menu_Assignment1}); //,
-            //this.Menu_Assignment2});
+            //this.Menu_Assignment1}); 
+            this.Menu_Assignment2});
             this.methodToolStripMenuItem.Name = "methodToolStripMenuItem";
             this.methodToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
             this.methodToolStripMenuItem.Text = "&Method";
