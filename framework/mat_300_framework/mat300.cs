@@ -225,7 +225,14 @@ namespace mat_300_framework
                     // grab the closest point and snap it to the mouse
                     SelectedIndex_ = PickPt(MouseInWorld_);
                 }
+            }
+            else if( e.Button == MouseButtons.None)
+            {
+                SelectedIndex_ = -1;
+            }
 
+            if(SelectedIndex_ != -1)
+            {
                 if(assignment_ == 1)
                 {
                     pts_[SelectedIndex_].y = MouseInWorld_.y;
@@ -236,10 +243,6 @@ namespace mat_300_framework
                 }
                 Refresh();
             }
-            else
-            {
-                SelectedIndex_ = -1;
-            }
         }
 
         private void MAT300_MouseDown(object sender, MouseEventArgs e)
@@ -249,10 +252,12 @@ namespace mat_300_framework
             if(assignment_ != 1)
             {
                 // if the left mouse button was clicked
-                if (e.Button == MouseButtons.Left)
+                if (e.Button == MouseButtons.Left && SelectedIndex_ == -1)
                 {
                     // add a new point to the controlPoints
                     pts_.Add(MouseInWorld_);
+
+                    SelectedIndex_ = pts_.Count - 1;
 
                     if (Menu_DeBoor.Checked)
                     {
@@ -456,13 +461,15 @@ namespace mat_300_framework
 
             Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
             Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
+
             UpdateMethod(2, Method.DeCastlejau);
         }
 
         private void Menu_Assignment2_Bernstein_Click(object sender, EventArgs e)
         {
             Menu_Assignment2_Bernstein.Checked = !Menu_Assignment2_Bernstein.Checked;
-            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
+            Menu_Polyline.Enabled = Menu_Points.Enabled = true;
+            Menu_Shell.Enabled = false;
 
             Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
             Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Midpoint.Checked = false;
@@ -473,7 +480,8 @@ namespace mat_300_framework
         private void Menu_Assignment2_Midpoint_Click(object sender, EventArgs e)
         {
             Menu_Assignment2_Midpoint.Checked = !Menu_Assignment2_Midpoint.Checked;
-            Menu_Polyline.Enabled = Menu_Points.Enabled = Menu_Shell.Enabled = true;
+            Menu_Polyline.Enabled = Menu_Points.Enabled =  true;
+            Menu_Shell.Enabled = false;
 
             Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
             Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = false;
@@ -679,18 +687,18 @@ namespace mat_300_framework
             System.Drawing.Pen shellPen = new Pen(Color.Red, 0.5f);
             System.Drawing.Pen splinePen = new Pen(Color.Black, 1.5f);
 
-            if (Menu_Shell.Checked)
+            if (Menu_Shell.Checked && Menu_Shell.Enabled)
             {
                 // draw the shell
                 DrawShell(gfx, shellPen, pts_, tVal_);
             }
 
-            if (Menu_Polyline.Checked)
+            if (Menu_Polyline.Checked && Menu_Polyline.Enabled)
             {
                 DrawPolyline(gfx, polyPen, pts_);
             }
 
-            if (Menu_Points.Checked)
+            if (Menu_Points.Checked && Menu_Points.Enabled)
             {
                 DrawPoints(gfx, polyPen, pts_);
             }
@@ -730,6 +738,7 @@ namespace mat_300_framework
                 gfx.DrawEllipse(splinePen, ProjectedMouse_.P().X - 2.0f, ProjectedMouse_.P().Y - 2.0f, 4.0f, 4.0f);
                 heightoffset += arial.Height;
             }
+            */
             
             if(assignment_ == 1)
             {
@@ -766,7 +775,6 @@ namespace mat_300_framework
                     gfx.DrawString("points" + i.ToString() + ": " + pts_[i].ToString(), arial, Brushes.Black, widthoffset, heightoffset + i * arial.Height);
                 }
             }
-            */
             //END of HUD drawing
             
             if (pts_.Count == 0)
