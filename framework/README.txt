@@ -1,15 +1,14 @@
-MAT300_Summer14_Assignment1 Readme
+MAT300_Summer14_Assignment2 Readme
 Author: Colin Avrech
-Date: 05/19/2014
+Date: 05/23/2014
 
-Please open the method menu and navigate to Assignment1->DeCastleJau 
-or Assignment1->Bernstein.
+Please open the method menu and navigate to Assignment2->DeCastleJau, 
+Assignment2->Bernstein, or Assignment2->Midpoint Subdivision.
 
-Controls for Assignment1
+Midpoint subdivision uses 5 approximations.
+
+Controls for Assignment2
 ============================
-Right Mouse Button - Move Coefficient
-
-If no asssignment is selected the controls are as follows
 Left Mouse Button - Add Point
 Middle Mouse Button - Delete Nearest Point
 Right Mouse Button - Move Nearest Point
@@ -20,4 +19,4 @@ by phone at (425)221-5903
 Code Locations
 File: mat300.cs
 Line 785: Drawing code
-Line 1008: Mathematical algorithms
+Line 1025: Mathematical algorithms
