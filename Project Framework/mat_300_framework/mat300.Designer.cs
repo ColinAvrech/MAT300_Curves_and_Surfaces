@@ -44,9 +44,10 @@ namespace mat_300_framework
             this.Menu_Assignment2_DeCastlejau = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Assignment2_Bernstein = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Assignment2_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment3_Inter_Poly = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Inter = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_Inter_Poly = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Inter_Splines = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_DeBoor = new System.Windows.Forms.ToolStripMenuItem();
             this.Txt_knot = new System.Windows.Forms.TextBox();
@@ -137,8 +138,9 @@ namespace mat_300_framework
             // methodToolStripMenuItem
             // 
             this.methodToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            //this.Menu_Assignment1}); 
-            this.Menu_Assignment2});
+            this.Menu_Assignment1, 
+            this.Menu_Assignment2,
+            this.Menu_Assignment3});
             this.methodToolStripMenuItem.Name = "methodToolStripMenuItem";
             this.methodToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
             this.methodToolStripMenuItem.Text = "&Method";
@@ -197,6 +199,15 @@ namespace mat_300_framework
             this.Menu_Assignment2_Midpoint.Text = "Midpoint Subdivision";
             this.Menu_Assignment2_Midpoint.Click += new System.EventHandler(this.Menu_Assignment2_Midpoint_Click);
             // 
+            // Menu_Assignment3
+            // 
+            this.Menu_Assignment3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Menu_Assignment3_Inter_Poly});
+            this.Menu_Assignment3.Name = "Menu_Assignment3";
+            this.Menu_Assignment3.Size = new System.Drawing.Size(175, 24);
+            this.Menu_Assignment3.Text = "Assignment3";
+            /*
+            // 
             // Menu_Inter
             // 
             this.Menu_Inter.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -205,12 +216,14 @@ namespace mat_300_framework
             this.Menu_Inter.Name = "Menu_Inter";
             this.Menu_Inter.Size = new System.Drawing.Size(157, 24);
             this.Menu_Inter.Text = "&Interpolate";
+            */
             // 
             // Menu_Inter_Poly
             // 
-            this.Menu_Inter_Poly.Name = "Menu_Inter_Poly";
-            this.Menu_Inter_Poly.Size = new System.Drawing.Size(152, 24);
-            this.Menu_Inter_Poly.Text = "&Polynomial";
+            this.Menu_Assignment3_Inter_Poly.Name = "Menu_Inter_Poly";
+            this.Menu_Assignment3_Inter_Poly.Size = new System.Drawing.Size(152, 24);
+            this.Menu_Assignment3_Inter_Poly.Text = "&Polynomial";
+            this.Menu_Assignment3_Inter_Poly.Click += new System.EventHandler(this.Menu_Assignment3_Inter_Poly_Click);
             // 
             // Menu_Inter_Splines
             // 
@@ -335,20 +348,24 @@ namespace mat_300_framework
         private System.Windows.Forms.ToolStripMenuItem Menu_Clear;
         private System.Windows.Forms.ToolStripMenuItem Menu_Inter;
         private System.Windows.Forms.ToolStripMenuItem Menu_DeBoor;
-        private System.Windows.Forms.ToolStripMenuItem Menu_Inter_Poly;
         private System.Windows.Forms.ToolStripMenuItem Menu_Inter_Splines;
         private System.Windows.Forms.TextBox Txt_knot;
         private System.Windows.Forms.Label NUD_label;
         private System.Windows.Forms.Label Lbl_knot;
         private System.Windows.Forms.NumericUpDown NUD;
         private System.Windows.Forms.CheckBox CB_cont;
+
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment1;
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment1_DeCastlejau;
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment1_Bernstein;
+        
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2;
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2_DeCastlejau;
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2_Bernstein;
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment2_Midpoint;
+        
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment3;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment3_Inter_Poly;
     }
 }
 
