@@ -1,13 +1,12 @@
-MAT300_Summer14_Assignment2 Readme
+MAT300_Summer14_Assignment3 Readme
 Author: Colin Avrech
-Date: 05/23/2014
+Date: 06/9/2014
 
-Please open the method menu and navigate to Assignment2->DeCastleJau, 
-Assignment2->Bernstein, or Assignment2->Midpoint Subdivision.
+Please open the method menu and navigate to Assignment3->Polynomial Interpolation.
 
-Midpoint subdivision uses 5 approximations.
+Program calculates a polynomial that intersects all input points.
 
-Controls for Assignment2
+Controls for Assignment3
 ============================
 Left Mouse Button - Add Point
 Middle Mouse Button - Delete Nearest Point
