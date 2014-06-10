@@ -112,6 +112,18 @@ namespace mat_300_framework
                 return new Point2D(rhs.x * t, rhs.y * t);
             }
 
+            //scalar division of points; for barycentric combos
+            public static Point2D operator /(float t, Point2D rhs)
+            {
+              return (rhs * (1.0f / t));
+            }
+
+            //scalar division of points; for barycentric combos
+            public static Point2D operator /(Point2D rhs, float t)
+            {
+              return (rhs * (1.0f / t));
+            }
+
             public Point2D ToWorldSpace()
             {
                 Point2D result = new Point2D( 2 * ((float)x/(float)WindowSize_.Width) - 0.5f,
@@ -911,16 +923,19 @@ namespace mat_300_framework
                     break;
 
                 case Method.Inter_Poly:
-                    current_right = new Point2D(PolyInterpolate(0));
+                    current_right = PolyInterpolate(0);
 
                     for (float t = alpha; t < 1; t += alpha)
                     {
-                        current_left = current_right;
-                        current_right = PolyInterpolate(t);
-                        gfx.DrawLine(splinePen, current_left.P(), current_right.P());
+                      current_left = current_right;
+                      current_right = PolyInterpolate(t);
+
+                      gfx.DrawLine(splinePen, current_left.P(), current_right.P());
                     }
 
-                    gfx.DrawLine(splinePen, current_right.P(), PolyInterpolate(1).P());
+                    current_left = current_right;
+                    current_right = PolyInterpolate(1);
+                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
                     break;
 
                 case Method.Inter_Spline:
@@ -1222,37 +1237,39 @@ namespace mat_300_framework
             }
         }
 
-        private Point2D GetNewtonForm(int i, List<Point2D> pts)
+
+        private Point2D PolyInterpolate(float p_t)
         {
-            if(pts.Count == 1)
-            {
-                return pts[0];
-            }
-            else
-            {
-                List<Point2D> left, right;
-                left = new List<Point2D>(pts);
-                left.RemoveAt(pts.Count - 1);
-                right = new List<Point2D>(pts);
-                right.RemoveAt(0);
+          float t = p_t * (pts_.Count - 1);
+          int i;
+          Point2D Result = new Point2D(0.0f, 0.0f); ;
+          List<List<Point2D>> DDT = new List<List<Point2D>>();
+          DDT.Add(pts_);
 
-                return new Point2D( (GetNewtonForm(i, right).x - GetNewtonForm(i, left).x) * (1.0f/(right[right.Count - 1].x - left[left.Count - 1].x)), (GetNewtonForm(i, right).y - GetNewtonForm(i, left).y) * (1.0f/(right[right.Count - 1].y - left[left.Count - 1].y)) );
-            }
-        }
-
-        private Point2D PolyInterpolate(float t)
-        {
-            Point2D Result = new Point2D(0.0f, 0.0f);
-            Point2D NewtonCoefficient;
-            List<Point2D> Coefficients = new List<Point2D>();
-
-            for(int i = 0; i < pts_.Count; i++)
+          for (i = 1; i < pts_.Count; ++i)
+          {
+            DDT.Add(new List<Point2D>());
+            for (int j = 0; j < DDT[i - 1].Count - 1; ++j)
             {
-                Coefficients.Add(pts_[i]);
-                NewtonCoefficient = GetNewtonForm(i, Coefficients);
-                Result += NewtonCoefficient * (float)System.Math.Pow((double)t, (double)i);
+              DDT[i].Add((DDT[i - 1][j + 1] - DDT[i - 1][j]) / i);
             }
-            return Result;
+          }
+
+          i = 0;
+          float value = 1.0f;
+          float x, y;
+          x = y = 0.0f;
+          do
+          {
+            x += DDT[i][0].x * value;
+            y += DDT[i][0].y * value;
+            value *= (t - i);
+            ++i;
+          }
+          while (i < pts_.Count);
+
+          Result = new Point2D(x, y);
+          return Result;
         }
 
         private Point2D SplineInterpolate(float t)
