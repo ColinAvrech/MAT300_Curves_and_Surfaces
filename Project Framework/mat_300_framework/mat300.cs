@@ -1243,32 +1243,44 @@ namespace mat_300_framework
           float t = p_t * (pts_.Count - 1);
           int i;
           Point2D Result = new Point2D(0.0f, 0.0f); ;
-          List<List<Point2D>> DDT = new List<List<Point2D>>();
-          DDT.Add(pts_);
+          List<List<double>> DDTX = new List<List<double>>();
+          List<List<double>> DDTY = new List<List<double>>();
+          
+          DDTX.Add(new List<double>());
+          DDTY.Add(new List<double>());
+
+          for (i = 0; i < pts_.Count; ++i)
+          {
+            DDTX[0].Add(pts_[i].x);
+            DDTY[0].Add(pts_[i].y);
+          }
 
           for (i = 1; i < pts_.Count; ++i)
           {
-            DDT.Add(new List<Point2D>());
-            for (int j = 0; j < DDT[i - 1].Count - 1; ++j)
+            DDTX.Add(new List<double>());
+            DDTY.Add(new List<double>());
+            
+            for (int j = 0; j < DDTX[i - 1].Count - 1; ++j)
             {
-              DDT[i].Add((DDT[i - 1][j + 1] - DDT[i - 1][j]) / i);
+              DDTX[i].Add((DDTX[i - 1][j + 1] - DDTX[i - 1][j]) / i);
+              DDTY[i].Add((DDTY[i - 1][j + 1] - DDTY[i - 1][j]) / i);
             }
           }
 
           i = 0;
-          float value = 1.0f;
-          float x, y;
+          double value = 1.0f;
+          double x, y;
           x = y = 0.0f;
           do
           {
-            x += DDT[i][0].x * value;
-            y += DDT[i][0].y * value;
+            x += DDTX[i][0] * value;
+            y += DDTY[i][0] * value;
             value *= (t - i);
             ++i;
           }
           while (i < pts_.Count);
 
-          Result = new Point2D(x, y);
+          Result = new Point2D((float)x, (float)y);
           return Result;
         }
 
