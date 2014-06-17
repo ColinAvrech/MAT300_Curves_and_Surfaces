@@ -52,6 +52,9 @@ namespace mat_300_framework
                     ++index;
                 }
             }
+
+            SplineCoefficients_ = new List<List<float>>();
+
         }
 
         // Point class for general math use
@@ -154,6 +157,7 @@ namespace mat_300_framework
         //Point2D ProjectedMouse_;
         static Size WindowSize_;
         List<List<int>> CachedPascalsTriangle_;
+        List<List<float>> SplineCoefficients_;
 
         List<Point2D> pts_; // the list of points used in internal algthms
         float tVal_; // t-value used for shell drawing
@@ -948,12 +952,10 @@ namespace mat_300_framework
             ///////////////////////////////////////////////////////////////////////////////
             // Bezier Curves                                                             //
             ///////////////////////////////////////////////////////////////////////////////
-            /*
             // spline interpolation
             if (Menu_Inter_Splines.Checked)
             {
-                Point2D current_left;
-                Point2D current_right = new Point2D(SplineInterpolate(0));
+                current_right = new Point2D(SplineInterpolate(0));
 
                 for (float t = alpha; t < 1; t += alpha)
                 {
@@ -965,6 +967,7 @@ namespace mat_300_framework
                 gfx.DrawLine(splinePen, current_right.P(), SplineInterpolate(1).P());
             }
 
+            /*
             // deboor
             if (Menu_DeBoor.Checked && pts_.Count >= 2)
             {
@@ -1052,6 +1055,22 @@ namespace mat_300_framework
         private float lerp(float lhs, float rhs, float t)
         {
             return (1.0f - t) * lhs + t * rhs;
+        }
+
+        private float BernsteinPolynomial(float t, int d, int i)
+        {
+            if (i < 0 || i > d)
+                return 0.0f;
+            else
+                return (float)(GetPascalBinomialCoeff(d, i) * System.Math.Pow((1.0f - t), d - (i + 1)) * System.Math.Pow(t, i));
+        }
+
+        private float TPF(float t, float c, int d)
+        {
+            if (t < c)
+                return 0.0f;
+            else
+                return (float)System.Math.Pow((t - c), d);
         }
 
         /*
@@ -1152,15 +1171,13 @@ namespace mat_300_framework
         
         private Point2D Bernstein(float t)
         {
-            float tcomplement = 1.0f - t;
+            int d = pts_.Count;
+            int i = 0;
+            Point2D Result = new Point2D(BernsteinPolynomial(t, d, i) * pts_[0]);
 
-            int binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, 0);
-            Point2D Result = new Point2D( (float)(binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - 1) * System.Math.Pow(t, 0)) * pts_[0]);
-
-            for(int i = 1; i < pts_.Count; ++i)
+            for(i = 1; i < pts_.Count; ++i)
             {
-                binomialcoefficient = GetPascalBinomialCoeff(pts_.Count, i);
-                Result += (float)(binomialcoefficient * System.Math.Pow(tcomplement, pts_.Count - (1 + i)) * System.Math.Pow(t, i)) * pts_[i];
+                Result += BernsteinPolynomial(t, d, i) * pts_[i];
             }
 
             if(assignment_ == 1)
@@ -1286,7 +1303,20 @@ namespace mat_300_framework
 
         private Point2D SplineInterpolate(float t)
         {
-            return new Point2D(0, 0);
+            //##TODO##
+            Point2D Result = new Point2D(0, 0);
+            int n = pts_.Count - 1;
+
+            for(int i = 0; i < n + 3; ++i)
+            {
+                SplineCoefficients_[i] = new List<float>();
+                for (int j = 0; j < n + 1; ++j)
+                {
+                    SplineCoefficients_[i][j] = (float)System.Math.Pow(t, j);
+                }
+            }
+
+            return Result;
         }
 
         private Point2D DeBoorAlgthm(float t)
