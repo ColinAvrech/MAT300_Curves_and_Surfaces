@@ -1350,16 +1350,14 @@ namespace mat_300_framework
                         {
                             tempterm = 0.0f;
                         }
+                        else if (j < 2 + 4)
+                        {
+                            tempterm = (float)(j * (j - 1) * System.Math.Pow(k, j - 2));
+                        }
                         else
                         {
-                            if( j == 3 && t == 0.0f)
-                            {
-                                tempterm = (float)(j * (j - 1) * System.Math.Pow(1, j - 2));
-                            }
-                            else
-                            {
-                                tempterm = (float)(j * (j - 1) * System.Math.Pow(t, j-2));
-                            }
+                            ++c;
+                            tempterm = (float)(j * (j - 1) * TPF(k, c, 1));
                         } 
                         SplineCoefficients_[i].Add(new Point2D(tempterm, tempterm));
                     }
@@ -1375,7 +1373,7 @@ namespace mat_300_framework
             for (int i = 0; i < n + 2; ++i)
             {
                 if(i < n)
-                    b[i] = pts_[i].x;
+                    b[i] = (double)pts_[i].x;
                 else
                     b[i] = 0.0f;
                 
@@ -1385,8 +1383,9 @@ namespace mat_300_framework
                 }
             }
 
-            alglib.rmatrixsolve(matrix, n + 2, b, out info, out report, out xcoeff);
+            alglib.rmatrixsolve(matrix, (n + 2), b, out info, out report, out xcoeff);
 
+            /*
             if(info == -3 && t == 0)
             {
                 for(int i = 0; i < n + 2; ++i)
@@ -1394,11 +1393,12 @@ namespace mat_300_framework
                     xcoeff[i] = 1;
                 }
             }
+            */
 
             for (int i = 0; i < n + 2; ++i)
             {
                 if (i < n)
-                    b[i] = pts_[i].y;
+                    b[i] = (double)pts_[i].y;
                 else
                     b[i] = 0.0f;
 
@@ -1408,8 +1408,9 @@ namespace mat_300_framework
                 }
             }
 
-            alglib.rmatrixsolve( matrix, n+2, b, out info, out report, out ycoeff);
+            alglib.rmatrixsolve( matrix, (n + 2), b, out info, out report, out ycoeff);
             
+            /*
             if(info == -3 && t == 0)
             {
                 for (int i = 0; i < n + 2; ++i)
@@ -1417,10 +1418,12 @@ namespace mat_300_framework
                     xcoeff[i] = 1;
                 }
             }
+            */
 
-            for(int i = 0; i < n + 2; ++i)
+            c = 0;
+            for(int i = 0; i < n; ++i)
             {
-                if(i < 4)
+                if (i < 4)
                 {
                     Result.x += (float)(xcoeff[i] * System.Math.Pow(t, i));
                     Result.y += (float)(ycoeff[i] * System.Math.Pow(t, i));
@@ -1428,8 +1431,8 @@ namespace mat_300_framework
                 else
                 {
                     ++c;
-                    Result.x += (float)(xcoeff[i] * TPF(t, c, 3));
-                    Result.y += (float)(ycoeff[i] * TPF(t, c, 3));
+                    Result.x += (float)(xcoeff[i] * TPF(t, c, 1));
+                    Result.y += (float)(ycoeff[i] * TPF(t, c, 1));
                 }
             }
 
