@@ -52,9 +52,6 @@ namespace mat_300_framework
                     ++index;
                 }
             }
-
-            SplineCoefficients_ = new List<List<float>>();
-
         }
 
         // Point class for general math use
@@ -157,7 +154,7 @@ namespace mat_300_framework
         //Point2D ProjectedMouse_;
         static Size WindowSize_;
         List<List<int>> CachedPascalsTriangle_;
-        List<List<float>> SplineCoefficients_;
+        List<List<Point2D>> SplineCoefficients_;
 
         List<Point2D> pts_; // the list of points used in internal algthms
         float tVal_; // t-value used for shell drawing
@@ -516,7 +513,7 @@ namespace mat_300_framework
                     
                     Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
                     Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
-                    Menu_Inter_Splines.Checked = false;
+                    Menu_Assignment4_Inter_Splines.Checked = false;
 
                     Menu_Polyline.Enabled = Menu_Polyline.Checked = false;
                     Menu_Points.Enabled = Menu_Points.Checked = true;
@@ -524,6 +521,15 @@ namespace mat_300_framework
                     break;
 
                 case 4:
+                    Menu_Assignment4_Inter_Splines.Checked = !Menu_Assignment4_Inter_Splines.Checked;
+
+                    Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
+                    Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
+                    Menu_Assignment3_Inter_Poly.Checked = false;
+
+                    Menu_Polyline.Enabled = Menu_Polyline.Checked = false;
+                    Menu_Points.Enabled = Menu_Points.Checked = true;
+                    Menu_Shell.Enabled = Menu_Shell.Checked = false;
                     break;
 
                 case 5:
@@ -566,6 +572,11 @@ namespace mat_300_framework
         private void Menu_Assignment3_Inter_Poly_Click(object sender, EventArgs e)
         {
             UpdateMethod(3, Method.Inter_Poly);
+        }
+
+        private void Menu_Assignment4_Inter_Splines_Click(object sender, EventArgs e)
+        {
+            UpdateMethod(4, Method.Inter_Spline);
         }
 
         /*
@@ -943,6 +954,17 @@ namespace mat_300_framework
                     break;
 
                 case Method.Inter_Spline:
+                    // spline interpolation
+                    current_right = new Point2D(SplineInterpolate(0));
+
+                    for (float t = alpha; t < 1; t += alpha)
+                    {
+                        current_left = current_right;
+                        current_right = SplineInterpolate(t);
+                        gfx.DrawLine(splinePen, current_left.P(), current_right.P());
+                    }
+
+                    gfx.DrawLine(splinePen, current_right.P(), SplineInterpolate(1).P());
                     break;
 
                 case Method.DeBoor:
@@ -952,21 +974,6 @@ namespace mat_300_framework
             ///////////////////////////////////////////////////////////////////////////////
             // Bezier Curves                                                             //
             ///////////////////////////////////////////////////////////////////////////////
-            // spline interpolation
-            if (Menu_Inter_Splines.Checked)
-            {
-                current_right = new Point2D(SplineInterpolate(0));
-
-                for (float t = alpha; t < 1; t += alpha)
-                {
-                    current_left = current_right;
-                    current_right = SplineInterpolate(t);
-                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
-                }
-
-                gfx.DrawLine(splinePen, current_right.P(), SplineInterpolate(1).P());
-            }
-
             /*
             // deboor
             if (Menu_DeBoor.Checked && pts_.Count >= 2)
@@ -1304,15 +1311,125 @@ namespace mat_300_framework
         private Point2D SplineInterpolate(float t)
         {
             //##TODO##
-            Point2D Result = new Point2D(0, 0);
-            int n = pts_.Count - 1;
+            Point2D Result = new Point2D(0.0f, 0.0f);
 
-            for(int i = 0; i < n + 3; ++i)
+            int k = 0;
+            int n = pts_.Count;
+            t = t * n;
+            int c = 0;
+
+            float tempterm;
+
+            double[,] matrix = new double[n+2, n+2];
+            
+            SplineCoefficients_ = new List<List<Point2D>>();
+            for(int i = 0; i < n + 2; ++i)
             {
-                SplineCoefficients_[i] = new List<float>();
-                for (int j = 0; j < n + 1; ++j)
+                SplineCoefficients_.Add(new List<Point2D>());
+                if(i < n)
                 {
-                    SplineCoefficients_[i][j] = (float)System.Math.Pow(t, j);
+                    for (int j = 0; j < n + 2; ++j)
+                    {
+                        if(j < 4)
+                        {
+                            tempterm = (float)System.Math.Pow(k, j);
+                        }
+                        else
+                        {
+                            ++c;
+                            tempterm = TPF(k, c, 3);
+                        }
+                        SplineCoefficients_[i].Add( new Point2D(tempterm, tempterm) );
+                    }
+                }
+                else //Handling of double prime p''(0) = p''(t) = 0 
+                {
+                    for (int j = 0; j < n + 2; ++j)
+                    {
+                        if( j < 2)
+                        {
+                            tempterm = 0.0f;
+                        }
+                        else
+                        {
+                            if( j == 3 && t == 0.0f)
+                            {
+                                tempterm = (float)(j * (j - 1) * System.Math.Pow(1, j - 2));
+                            }
+                            else
+                            {
+                                tempterm = (float)(j * (j - 1) * System.Math.Pow(t, j-2));
+                            }
+                        } 
+                        SplineCoefficients_[i].Add(new Point2D(tempterm, tempterm));
+                    }
+                }
+                ++k;
+            }
+
+            alglib.densesolverreport report;
+            int info;
+            double[] b = new double[n + 2];
+            double[] xcoeff , ycoeff;
+
+            for (int i = 0; i < n + 2; ++i)
+            {
+                if(i < n)
+                    b[i] = pts_[i].x;
+                else
+                    b[i] = 0.0f;
+                
+                for(int j = 0; j < n + 2; ++j)
+                {
+                    matrix[i, j] = (double)SplineCoefficients_[i][j].x;
+                }
+            }
+
+            alglib.rmatrixsolve(matrix, n + 2, b, out info, out report, out xcoeff);
+
+            if(info == -3 && t == 0)
+            {
+                for(int i = 0; i < n + 2; ++i)
+                {
+                    xcoeff[i] = 1;
+                }
+            }
+
+            for (int i = 0; i < n + 2; ++i)
+            {
+                if (i < n)
+                    b[i] = pts_[i].y;
+                else
+                    b[i] = 0.0f;
+
+                for (int j = 0; j < n + 2; ++j)
+                {
+                    matrix[i, j] = (double)SplineCoefficients_[i][j].y;
+                }
+            }
+
+            alglib.rmatrixsolve( matrix, n+2, b, out info, out report, out ycoeff);
+            
+            if(info == -3 && t == 0)
+            {
+                for (int i = 0; i < n + 2; ++i)
+                {
+                    xcoeff[i] = 1;
+                }
+            }
+
+            for(int i = 0; i < n + 2; ++i)
+            {
+                if(i < 4)
+                {
+                    Result.x += (float)(xcoeff[i] * System.Math.Pow(t, i));
+                    Result.y += (float)(ycoeff[i] * System.Math.Pow(t, i));
+                }
+                else
+                {
+                    ++c;
+                    Result.x += (float)(xcoeff[i] * TPF(t, c, 3));
+                    Result.y += (float)(ycoeff[i] * TPF(t, c, 3));
                 }
             }
 

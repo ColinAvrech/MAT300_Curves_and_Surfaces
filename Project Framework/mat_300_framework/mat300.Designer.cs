@@ -46,9 +46,9 @@ namespace mat_300_framework
             this.Menu_Assignment2_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Assignment3 = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Assignment3_Inter_Poly = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_Assignment4_Inter_Splines = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Midpoint = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_Inter = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_Inter_Splines = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_DeBoor = new System.Windows.Forms.ToolStripMenuItem();
             this.Txt_knot = new System.Windows.Forms.TextBox();
             this.Lbl_knot = new System.Windows.Forms.Label();
@@ -140,7 +140,8 @@ namespace mat_300_framework
             this.methodToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Menu_Assignment1, 
             this.Menu_Assignment2,
-            this.Menu_Assignment3});
+            this.Menu_Assignment3,
+            this.Menu_Assignment4});
             this.methodToolStripMenuItem.Name = "methodToolStripMenuItem";
             this.methodToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
             this.methodToolStripMenuItem.Text = "&Method";
@@ -152,7 +153,7 @@ namespace mat_300_framework
             this.Menu_Assignment1_Bernstein});
             this.Menu_Assignment1.Name = "Menu_Assignment1";
             this.Menu_Assignment1.Size = new System.Drawing.Size(175, 24);
-            this.Menu_Assignment1.Text = "Assignment1";
+            this.Menu_Assignment1.Text = "Assignment1 - Coefficients Polynomial";
             // 
             // Menu_Assignment1_DeCastlejau
             // 
@@ -176,7 +177,7 @@ namespace mat_300_framework
             this.Menu_Assignment2_Midpoint});
             this.Menu_Assignment2.Name = "Menu_Assignment2";
             this.Menu_Assignment2.Size = new System.Drawing.Size(175, 24);
-            this.Menu_Assignment2.Text = "Assignment2";
+            this.Menu_Assignment2.Text = "Assignment2 - Polynomial";
             // 
             // Menu_Assignment2_DeCastlejau
             // 
@@ -205,18 +206,15 @@ namespace mat_300_framework
             this.Menu_Assignment3_Inter_Poly});
             this.Menu_Assignment3.Name = "Menu_Assignment3";
             this.Menu_Assignment3.Size = new System.Drawing.Size(175, 24);
-            this.Menu_Assignment3.Text = "Assignment3";
-            /*
+            this.Menu_Assignment3.Text = "Assignment3 - Polynomial Interpolation";
             // 
             // Menu_Inter
             // 
-            this.Menu_Inter.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Menu_Inter_Poly,
-            this.Menu_Inter_Splines});
-            this.Menu_Inter.Name = "Menu_Inter";
-            this.Menu_Inter.Size = new System.Drawing.Size(157, 24);
-            this.Menu_Inter.Text = "&Interpolate";
-            */
+            this.Menu_Assignment4.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Menu_Assignment4_Inter_Splines});
+            this.Menu_Assignment4.Name = "Menu_Inter";
+            this.Menu_Assignment4.Size = new System.Drawing.Size(157, 24);
+            this.Menu_Assignment4.Text = "&Assignment4 - Spline Interpolation";
             // 
             // Menu_Inter_Poly
             // 
@@ -227,9 +225,10 @@ namespace mat_300_framework
             // 
             // Menu_Inter_Splines
             // 
-            this.Menu_Inter_Splines.Name = "Menu_Inter_Splines";
-            this.Menu_Inter_Splines.Size = new System.Drawing.Size(152, 24);
-            this.Menu_Inter_Splines.Text = "&Splines";
+            this.Menu_Assignment4_Inter_Splines.Name = "Menu_Inter_Splines";
+            this.Menu_Assignment4_Inter_Splines.Size = new System.Drawing.Size(152, 24);
+            this.Menu_Assignment4_Inter_Splines.Text = "&Splines";
+            this.Menu_Assignment4_Inter_Splines.Click += new System.EventHandler(this.Menu_Assignment4_Inter_Splines_Click);
             // 
             // Menu_DeBoor
             // 
@@ -366,6 +365,9 @@ namespace mat_300_framework
         
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment3;
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment3_Inter_Poly;
+
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment4;
+        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment4_Inter_Splines;
     }
 }
 
