@@ -350,10 +350,8 @@ namespace mat_300_framework
         private System.Windows.Forms.ToolStripMenuItem Menu_Inter_Splines;
         private System.Windows.Forms.TextBox Txt_knot;
         private System.Windows.Forms.Label NUD_label;
-        private System.Windows.Forms.Label NUD2_label;
         private System.Windows.Forms.Label Lbl_knot;
         private System.Windows.Forms.NumericUpDown NUD;
-        private System.Windows.Forms.NumericUpDown NUD2;
         private System.Windows.Forms.CheckBox CB_cont;
 
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment1;
@@ -370,9 +368,6 @@ namespace mat_300_framework
 
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment4;
         private System.Windows.Forms.ToolStripMenuItem Menu_Assignment4_Inter_Splines;
-
-        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment5;
-        private System.Windows.Forms.ToolStripMenuItem Menu_Assignment5_DeBoor;
     }
 }
 

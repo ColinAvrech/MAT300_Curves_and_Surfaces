@@ -160,7 +160,6 @@ namespace mat_300_framework
         float tVal_; // t-value used for shell drawing
         int degree_; // degree of deboor subsplines
         int iterations_; //iterations for midpoint subdivision
-        int intervals_;//used for deboor
         List<float> knot_; // knot sequence for deboor
         bool EdPtCont_; // end point continuity flag for std knot seq contruction
         Random rnd_; // random number generator
@@ -352,17 +351,18 @@ namespace mat_300_framework
                     //    NUD.Value = iterations_;
                     //}
                     break;
-                case 5://deboor checked
-                    degree_ = (int)NUD.Value;
-                    intervals_ = (int)NUD2.Value;
-
-                    ResetKnotSeq();
-                    UpdateKnotSeq();
-
-                    NUD.Value = degree_;
-                    NUD2.Value = intervals_;
-                    break;
             }
+            /*
+            else if (Menu_DeBoor.Checked)
+            {
+                degree_ = (int)NUD.Value;
+
+                ResetKnotSeq();
+                UpdateKnotSeq();
+
+                NUD.Value = degree_;
+            }
+            */
 
             Refresh();
         }
@@ -448,25 +448,26 @@ namespace mat_300_framework
                     {
                         case Method.DeCastlejau:
                             Menu_Assignment1_DeCastlejau.Checked = !Menu_Assignment1_DeCastlejau.Checked;
+
                             Menu_Assignment1_Bernstein.Checked = false;
+                            Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
+                            
+                            Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
+                            Menu_Points.Enabled = Menu_Points.Checked = true;
+                            Menu_Shell.Enabled = Menu_Shell.Checked = true; 
                             break;
 
                         case Method.Bernstein:
                             Menu_Assignment1_Bernstein.Checked = !Menu_Assignment1_Bernstein.Checked;
 
                             Menu_Assignment1_DeCastlejau.Checked = false;
+                            Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
                             
+                            Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
+                            Menu_Points.Enabled = Menu_Points.Checked = true;
+                            Menu_Shell.Enabled = Menu_Shell.Checked = true; 
                             break;
                     }
-
-                    Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
-                    Menu_Assignment3_Inter_Poly.Checked = false;
-                    Menu_Assignment4_Inter_Splines.Checked = false;
-                    Menu_Assignment5_DeBoor.Checked = false;
-                    
-                    Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
-                    Menu_Points.Enabled = Menu_Points.Checked = true;
-                    Menu_Shell.Enabled = Menu_Shell.Checked = true; 
                     break;
 
                 case 2:
@@ -474,33 +475,37 @@ namespace mat_300_framework
                     {
                         case Method.DeCastlejau:
                             Menu_Assignment2_DeCastlejau.Checked = !Menu_Assignment2_DeCastlejau.Checked;
+
+                            Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
                             Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
 
+                            Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
+                            Menu_Points.Enabled = Menu_Points.Checked = true;
                             Menu_Shell.Enabled = Menu_Shell.Checked = true; 
                             break;
 
                         case Method.Bernstein:
                             Menu_Assignment2_Bernstein.Checked = !Menu_Assignment2_Bernstein.Checked;
+            
+                            Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
                             Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Midpoint.Checked = false;
 
+                            Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
+                            Menu_Points.Enabled = Menu_Points.Checked = true;
                             Menu_Shell.Enabled = Menu_Shell.Checked = false;
                             break;
 
                         case Method.MidpointSubdivision:
                             Menu_Assignment2_Midpoint.Checked = !Menu_Assignment2_Midpoint.Checked;
+
+                            Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
                             Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = false;
-                   
+            
+                            Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
+                            Menu_Points.Enabled = Menu_Points.Checked = true;
                             Menu_Shell.Enabled = Menu_Shell.Checked = false;
                             break;
                     }
-
-                    Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
-                    Menu_Assignment3_Inter_Poly.Checked = false;
-                    Menu_Assignment4_Inter_Splines.Checked = false;
-                    Menu_Assignment5_DeBoor.Checked = false;
-
-                    Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
-                    Menu_Points.Enabled = Menu_Points.Checked = true;
                     break;
 
                 case 3: 
@@ -509,7 +514,6 @@ namespace mat_300_framework
                     Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
                     Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
                     Menu_Assignment4_Inter_Splines.Checked = false;
-                    Menu_Assignment5_DeBoor.Checked = false;
 
                     Menu_Polyline.Enabled = Menu_Polyline.Checked = false;
                     Menu_Points.Enabled = Menu_Points.Checked = true;
@@ -522,7 +526,6 @@ namespace mat_300_framework
                     Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
                     Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
                     Menu_Assignment3_Inter_Poly.Checked = false;
-                    Menu_Assignment5_DeBoor.Checked = false;
 
                     Menu_Polyline.Enabled = Menu_Polyline.Checked = false;
                     Menu_Points.Enabled = Menu_Points.Checked = true;
@@ -530,23 +533,6 @@ namespace mat_300_framework
                     break;
 
                 case 5:
-                    //Create Coefficient Points
-                    for (int i = 0; i < degree_ + 1; ++i)
-                    {
-                        pts_.Add(new Point2D(((float)i / (float)degree_), 1.0f));
-                    }
-
-                    Menu_Assignment5_DeBoor.Checked = !Menu_Assignment5_DeBoor.Checked;
-
-                    Menu_Assignment1_DeCastlejau.Checked = Menu_Assignment1_Bernstein.Checked = false;
-                    Menu_Assignment2_DeCastlejau.Checked = Menu_Assignment2_Bernstein.Checked = Menu_Assignment2_Midpoint.Checked = false;
-                    Menu_Assignment3_Inter_Poly.Checked = false;
-                    Menu_Assignment4_Inter_Splines.Checked = false;
-
-                    //not sure bout these
-                    Menu_Polyline.Enabled = Menu_Polyline.Checked = true;
-                    Menu_Points.Enabled = Menu_Points.Checked = true;
-                    Menu_Shell.Enabled = Menu_Shell.Checked = false;
                     break;
 
                 case 6:
@@ -717,40 +703,9 @@ namespace mat_300_framework
                     */
                     break;
 
-                case 5:
-                    NUD_label.Text = "&Degree";
-                    NUD_label.TabIndex = 3;
-
-                    NUD.TabIndex = 5;
-                    NUD.DecimalPlaces = 0;
-                    NUD.Increment = (decimal)1;
-                    NUD.Minimum = (decimal)1;
-                    NUD.Maximum = (decimal)20;
-                    NUD.Value = (decimal)degree_;
-
-                    NUD_label.Visible = true;
-                    NUD.Visible = true;
-                    
-                    NUD2_label.Text = "&Intervals";
-                    NUD2_label.TabIndex = 4;
-
-                    NUD2.TabIndex = 6;
-                    NUD2.DecimalPlaces = 0;
-                    NUD2.Increment = (decimal)1;
-                    NUD2.Minimum = (decimal)1;
-                    NUD2.Maximum = (decimal)20;
-                    NUD2.Value = (decimal)intervals_;
-
-                    NUD2_label.Visible = true;
-                    NUD2.Visible = true;
-                    break;
-
                 default:
                     NUD_label.Visible = false;
                     NUD.Visible = false;
-
-                    NUD2_label.Visible = false;
-                    NUD2.Visible = false;
                     break;
             }
             /*
@@ -899,7 +854,7 @@ namespace mat_300_framework
             // Draw Axes for Assignment 11                                               //
             ///////////////////////////////////////////////////////////////////////////////
 
-            if (assignment_ == 1 || assignment_ == 5)
+            if (assignment_ == 1)
             {
                 //Draw Axes
                 Point2D Origin = new Point2D(0.0f, 0.0f);
@@ -1013,23 +968,30 @@ namespace mat_300_framework
                     break;
 
                 case Method.DeBoor:
-                    // deboor
-                    if (Menu_DeBoor.Checked && pts_.Count >= 2)
-                    {
-                        current_right = new Point2D(DeBoorAlgthm(knot_[degree_]));
-
-                        float lastT = knot_[knot_.Count - degree_ - 1] - alpha;
-                        for (float t = alpha; t < lastT; t += alpha)
-                        {
-                            current_left = current_right;
-                            current_right = DeBoorAlgthm(t);
-                            gfx.DrawLine(splinePen, current_left.P(), current_right.P());
-                        }
-
-                        gfx.DrawLine(splinePen, current_right.P(), DeBoorAlgthm(lastT).P());
-                    }
                     break;
             }
+            
+            ///////////////////////////////////////////////////////////////////////////////
+            // Bezier Curves                                                             //
+            ///////////////////////////////////////////////////////////////////////////////
+            /*
+            // deboor
+            if (Menu_DeBoor.Checked && pts_.Count >= 2)
+            {
+                Point2D current_left;
+                Point2D current_right = new Point2D(DeBoorAlgthm(knot_[degree_]));
+
+                float lastT = knot_[knot_.Count - degree_ - 1] - alpha;
+                for (float t = alpha; t < lastT; t += alpha)
+                {
+                    current_left = current_right;
+                    current_right = DeBoorAlgthm(t);
+                    gfx.DrawLine(splinePen, current_left.P(), current_right.P());
+                }
+
+                gfx.DrawLine(splinePen, current_right.P(), DeBoorAlgthm(lastT).P());
+            }
+            */
 
             ///////////////////////////////////////////////////////////////////////////////
             // Drawing code end                                                          //
