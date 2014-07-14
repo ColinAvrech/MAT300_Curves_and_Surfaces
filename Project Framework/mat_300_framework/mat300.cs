@@ -1344,6 +1344,12 @@ namespace mat_300_framework
                 }
                 else //Handling of double prime p''(0) = p''(t) = 0 
                 {
+                    if(i == n)
+                    {
+                        k = 0;
+                        c = 0;
+                    }
+
                     for (int j = 0; j < n + 2; ++j)
                     {
                         if( j < 2)
