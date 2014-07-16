@@ -336,11 +336,12 @@ namespace mat_300_framework
             if (assignment_ != 7 || pts_.Count == 0)
                 return;
 
-            s_ = (int)NUD.Value;
-            NUD.Value = s_;
+            //tVal_ /= s_;
 
-            ResetKnotSeq();
-            UpdateKnotSeq();
+            s_ = (int)S_NUD.Value;
+            S_NUD.Value = s_;
+
+            //tVal_ = s_;
 
             pts_.Clear();
 
@@ -349,6 +350,9 @@ namespace mat_300_framework
             {
                 pts_.Add(new Point2D(((float)i / (float)s_), 1.0f));
             }
+
+            ResetKnotSeq();
+            UpdateKnotSeq();
 
             Refresh();
         }
@@ -1473,41 +1477,20 @@ namespace mat_300_framework
             }
             else
             {
-                float coeff1, coeff2;
+                double coeff1, coeff2;
                 coeff1 = ( (t - knot_[i]) / (knot_[i + degree_ - (p - 1)] - knot_[i]) );
                 coeff2 = ( (knot_[i + degree_ - (p - 1)] - t) / (knot_[i + degree_ - (p - 1)] - knot_[i]) );
-                return coeff1 * DeBoorHelperFunc(p - 1, i, t) + coeff2 * DeBoorHelperFunc(p - 1, i - 1, t);
+                return (float)coeff1 * DeBoorHelperFunc(p - 1, i, t) + (float)coeff2 * DeBoorHelperFunc(p - 1, i - 1, t);
             }
 
         }
 
         private Point2D DeBoorAlgthm(float t)
         {
-            /*
-            List<Point2D> curve = new List<Point2D>();
             Point2D TempPoint;
             int N, j, p;
             p = j = 0;
             N = knot_.Count;
-
-            for (p = 0; p < degree_; ++p)
-            {
-                if (p == 0)
-                {
-                    curve = pts_;
-                }
-                else
-                {
-                    for(int i = j - degree_ + p; i < j; ++i)
-                    {
-                        TempPoint = DeBoorHelperFunc(p, i, t);
-                        curve.Add(TempPoint);
-                    }
-                }
-            }
-            */
-            int j = 0;
-            int N = knot_.Count;
 
             for (int i = 0; i < N; ++i)
             {
@@ -1518,9 +1501,16 @@ namespace mat_300_framework
                 }
             }
 
-            System.Diagnostics.Debug.Assert(j >= 0);
-
-            return DeBoorHelperFunc(degree_, j, t);
+            if(j < 0)
+            {
+                return new Point2D(0.0f, 0.0f);
+                //System.Diagnostics.Debug.Assert(j >= 0);
+            }
+            else
+            { 
+                TempPoint = DeBoorHelperFunc(degree_, j, t);
+                return TempPoint;
+            }
         }
     }
 }
